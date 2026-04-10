@@ -27,18 +27,20 @@
 **Depends on:** Nothing (infrastructure complete)
 
 **Key decisions from research:**
-- Swipe gesture via `GestureDetector.onHorizontalDragEnd` (velocity threshold ~300px/s) — no third-party swipe package needed for RM-13's acceptance criteria
-- Loading state via `skeletonizer ^1.x` package (wraps real widget tree — no separate skeleton layout)
+- Swipe gesture via `flutter_card_swiper ^7.0.0` — proportional rotation (12–15°), velocity fly-off (>800px/s OR >40% card width), directional overlays; `CardSwiperController` lives on `ConsumerStatefulWidget` state (UI concern, not Riverpod)
+- Loading state via `skeletonizer ^1.x` package (wraps real widget tree — no separate skeleton layout); configure `SkeletonizerConfigData.dark()` in `AppTheme`
 - Swipe disabled during loading to prevent race conditions (gate via `cardState.isLoading`)
-- `AnimatedSwitcher` + `ValueKey(card.id)` for crossfade between cards
+- Card wrapped in `AspectRatio(aspectRatio: 63/88)` — prevents layout shift when image loads
 - 429 rate limit mapped to `RateLimitedFailure` (new type in `shared/failures.dart`)
 - `legalities` map parsed defensively via `.toString()` conversion
 - Null image URL guard before `CachedNetworkImage`
+- `RandomCardNotifier` marked `keepAlive: true` to survive tab navigation
+- `activeFilterQueryProvider` scaffolded as null stub (no UI — just one provider file)
 
 **Plans:**
-1. Add `skeletonizer` to pubspec; run `flutter pub get`
-2. Add `RateLimitedFailure` to `shared/failures.dart`; fix `legalities` cast in `MagicCard.fromJson()`
-3. Implement `CardSwipeScreen` — artwork display, metadata overlay, swipe gesture, loading + error states
+1. Add `flutter_card_swiper` + `skeletonizer` to pubspec; run `flutter pub get`
+2. Add `RateLimitedFailure` to `shared/failures.dart`; fix `legalities` cast in `MagicCard.fromJson()`; scaffold `activeFilterQueryProvider` null stub
+3. Implement `CardSwipeScreen` — artwork display, metadata overlay, swipe gestures, directional overlays, action buttons, loading + error states
 
 **UAT:**
 - [ ] Swipe left or right loads a new random card (shimmer shown during load)
