@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:random_magic/core/theme/app_theme.dart';
 
 void main() {
   runApp(const RandomMagicApp());
@@ -13,10 +14,11 @@ class RandomMagicApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       title: 'Random Magic',
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
+      theme: AppTheme.dark,
+      home: const Scaffold(
         body: Center(
           child: Text('Random Magic'),
         ),
