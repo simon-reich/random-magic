@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:random_magic/core/router/app_router.dart';
 import 'package:random_magic/core/theme/app_theme.dart';
 
 void main() {
-  runApp(const RandomMagicApp());
+  runApp(const ProviderScope(child: RandomMagicApp()));
 }
 
 /// Root widget of the Random Magic application.
 ///
-/// Wires up the [appRouter] and [AppTheme.dark]. Riverpod [ProviderScope]
-/// will wrap this once providers are introduced in a later ticket.
+/// Wrapped in [ProviderScope] in [main] to initialise the Riverpod container.
+/// Wires up [appRouter] and [AppTheme.dark].
 class RandomMagicApp extends StatelessWidget {
   const RandomMagicApp({super.key});
 
