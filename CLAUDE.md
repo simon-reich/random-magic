@@ -26,7 +26,7 @@ maintain a favourites collection with its own filtering and swipe view.
 |---|---|
 | Framework | Flutter (Dart, stable channel) |
 | State Management | Riverpod 2.x with code generation (`@riverpod`) |
-| Local Database | Isar (favourites + filter presets) |
+| Local Database | Hive CE (favourites + filter presets) |
 | HTTP Client | Dio |
 | Navigation | GoRouter |
 | Testing | flutter_test + mockito |
@@ -54,7 +54,7 @@ lib/
 │   │   ├── domain/       # FilterPreset model, FilterSettings model
 │   │   └── presentation/ # FilterSettingsScreen, providers
 │   ├── favourites/       # Favourites save/view/delete/filter
-│   │   ├── data/         # FavouritesRepository (Isar)
+│   │   ├── data/         # FavouritesRepository (Hive CE)
 │   │   ├── domain/       # FavouriteCard model
 │   │   └── presentation/ # FavouritesScreen, FavouriteSwipeScreen, providers
 │   └── card_detail/      # Card detail view
@@ -81,17 +81,14 @@ https://allmyplaygrounds.atlassian.net/wiki/spaces/RMFA/pages/7536643
 **Summary of accepted decisions:**
 - Flutter chosen over React Native for superior animation and rendering control
 - Riverpod chosen over BLoC / Provider for testability and compile-safety
-- Isar chosen over Hive for reactive queries and better performance on complex objects
+- Hive CE chosen for local storage (replaces Isar — see ADR-006); pure Dart, no AGP issues, no source_gen conflict
 - Feature-first folder structure for isolation and agent-friendly scope boundaries
 - Scryfall called directly from the Flutter app — no backend proxy
 
-**Known version constraint — do not change without testing:**
-`flutter_riverpod` and `riverpod_generator` are pinned to **2.x**, not 3.x.
-`isar_generator 3.x` requires `source_gen ^1.x`, which is incompatible with
-`riverpod_generator 3.x` (needs `source_gen ^3+`). Both code-gen tools must run
-in the same `build_runner` pass, so they must agree on `source_gen`.
-Upgrade path: wait for Isar 4 (or a release that bumps to `source_gen ^3+`),
-then upgrade both Riverpod and Isar together and verify `flutter pub get` resolves cleanly.
+**Note on Riverpod version:**
+`flutter_riverpod` and `riverpod_generator` are currently on **2.x**. With Isar removed
+there is no longer a hard `source_gen` blocker for upgrading to Riverpod 3.x.
+Upgrade when convenient — verify `flutter pub get` and `flutter analyze` resolve cleanly.
 
 ---
 
@@ -140,14 +137,14 @@ query building.
 **Responsibilities:**
 - Implement `ScryfallApiClient` using Dio in `core/network/`
 - Implement `ScryfallQueryBuilder` in `features/filters/data/`
-- Implement Isar schemas for `FavouriteCard` and `FilterPreset`
+- Implement Hive CE boxes for `FavouriteCard` and `FilterPreset`
 - Handle all Scryfall error codes (404, 422, network timeout)
 - Handle double-faced cards in `MagicCard.fromJson()`
 
 **Rules:**
 - Never make real HTTP calls in tests — all API clients must be injectable/mockable
 - All repository methods must return typed results (use `Result<T>` pattern or sealed classes)
-- Isar schema changes must be accompanied by a migration strategy note
+- Hive CE box schema changes (type adapter changes) must be accompanied by a migration strategy note
 
 **Scryfall query syntax quick-reference:**
 ```
@@ -196,7 +193,7 @@ integration_test/           → Full app flow tests
 - [ ] No hardcoded colours, strings, or magic numbers (use constants)
 - [ ] No direct Scryfall calls from presentation layer
 - [ ] Error states handled for every async operation
-- [ ] New Isar schema changes documented
+- [ ] New Hive CE box/adapter changes documented
 
 ---
 
@@ -217,7 +214,7 @@ integration_test/           → Full app flow tests
 - Files: `snake_case.dart`
 - Classes: `PascalCase`
 - Providers: `camelCaseProvider` (Riverpod generated)
-- Isar collections: `@Collection()` classes in `domain/` with `snake_case` file names
+- Hive CE type adapters: `TypeAdapter` classes in `domain/` with `snake_case` file names
 
 ### No magic numbers
 ```dart
