@@ -85,6 +85,14 @@ https://allmyplaygrounds.atlassian.net/wiki/spaces/RMFA/pages/7536643
 - Feature-first folder structure for isolation and agent-friendly scope boundaries
 - Scryfall called directly from the Flutter app — no backend proxy
 
+**Known version constraint — do not change without testing:**
+`flutter_riverpod` and `riverpod_generator` are pinned to **2.x**, not 3.x.
+`isar_generator 3.x` requires `source_gen ^1.x`, which is incompatible with
+`riverpod_generator 3.x` (needs `source_gen ^3+`). Both code-gen tools must run
+in the same `build_runner` pass, so they must agree on `source_gen`.
+Upgrade path: wait for Isar 4 (or a release that bumps to `source_gen ^3+`),
+then upgrade both Riverpod and Isar together and verify `flutter pub get` resolves cleanly.
+
 ---
 
 ## Agent Roles
