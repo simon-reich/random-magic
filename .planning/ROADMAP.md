@@ -70,16 +70,18 @@ Plans:
 - `FilterPreset` stored in Hive CE box `'filter_presets'` with `typeId: 0`
 - Preset name used as box key — upsert semantics for edit; `containsKey` guard for create
 - Hive boxes opened in `main()` before `runApp()` (needed here; implement in this phase)
-- Colour UI: row of W/U/B/R/G/C/M toggle buttons (mana symbol icons or coloured circles)
+- Colour UI: row of W/U/B/R/G/C/M toggle buttons using Scryfall SVG mana symbol icons (flutter_svg)
 - Type/rarity UI: Material 3 filter chips in wrap layout, multi-select
 - Date range: two date picker fields (Released After / Released Before)
 
-**Plans:**
-1. Initialize Hive CE in `main.dart` (open boxes before `runApp`); create `FilterPreset` domain model + Hive adapter
-2. Implement `ScryfallQueryBuilder.fromPreset()` + `ActiveFilterQuery` provider + `FilterPresetsNotifier`
-3. Update `RandomCardNotifier` to `ref.watch(activeFilterQueryProvider)` in `build()`
-4. Implement `FilterSettingsScreen` — filter chips, date pickers, preset save/select/delete
-5. Add active filter summary bar to `CardSwipeScreen`
+**Plans:** 5 plans
+
+Plans:
+- [ ] 02-00-PLAN.md — Wave 0: create test stubs (scryfall_query_builder_test, filter_settings_notifier_test, filter_presets_notifier_test, widget stubs, fake_preset fixture)
+- [ ] 02-01-PLAN.md — Add flutter_svg to pubspec; create MtgColor enum, FilterSettings, FilterPreset + FilterPresetAdapter (typeId: 0); init Hive CE in main.dart
+- [ ] 02-02-PLAN.md — Implement ScryfallQueryBuilder + FilterPresetRepository; replace providers.dart stub with FilterSettingsNotifier, activeFilterQuery, FilterPresetsNotifier
+- [ ] 02-03-PLAN.md — Implement FilterSettingsScreen — mana SVG toggles, type/rarity chips, date pickers, preset chip row (select+delete), preset save with duplicate validation
+- [ ] 02-04-PLAN.md — Add _ActiveFilterBar to CardSwipeScreen (DISC-10) — conditional chip row above card, chip X removes filter
 
 **UAT:**
 - [ ] Setting colour + type filter and returning to swipe screen fetches cards matching those filters
@@ -205,4 +207,4 @@ Key decisions from research that influenced this roadmap:
 
 ---
 *Roadmap created: 2026-04-10*
-*Last updated: 2026-04-12 — Phase 1 plans created (01-01, 01-02, 01-03)*
+*Last updated: 2026-04-12 — Phase 2 plans created (02-00 through 02-04)*
