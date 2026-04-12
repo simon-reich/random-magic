@@ -7,6 +7,8 @@ import 'package:random_magic/core/constants/spacing.dart';
 import 'package:random_magic/core/router/app_router.dart';
 import 'package:random_magic/core/theme/app_theme.dart';
 import 'package:random_magic/features/card_discovery/presentation/providers.dart';
+import 'package:random_magic/features/filters/domain/filter_settings.dart';
+import 'package:random_magic/features/filters/presentation/providers.dart';
 import 'package:random_magic/shared/failures.dart';
 import 'package:random_magic/shared/models/magic_card.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -42,25 +44,35 @@ class _CardSwipeScreenState extends ConsumerState<CardSwipeScreen> {
   @override
   Widget build(BuildContext context) {
     final cardState = ref.watch(randomCardProvider);
+    final filterState = ref.watch(filterSettingsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.lg,
-            ),
-            child: AspectRatio(
-              aspectRatio: 63 / 88, // Standard MTG card ratio (D-02)
-              child: cardState.when(
-                loading: () => _buildLoadingCard(),
-                data: (card) => _buildSwipeStack(card, isLoading: false),
-                error: (error, _) => _buildErrorCard(error),
+        child: Column(
+          children: [
+            // D-10: active filter bar shown only when filters are active (DISC-10)
+            if (!filterState.isEmpty) _ActiveFilterBar(filterState: filterState),
+            // Card slot — Expanded so it fills remaining space when filter bar is visible
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.lg,
+                  ),
+                  child: AspectRatio(
+                    aspectRatio: 63 / 88, // Standard MTG card ratio (D-02)
+                    child: cardState.when(
+                      loading: () => _buildLoadingCard(),
+                      data: (card) => _buildSwipeStack(card, isLoading: false),
+                      error: (error, _) => _buildErrorCard(error),
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -238,6 +250,140 @@ class _CardFaceWidget extends StatelessWidget {
       ],
     );
   }
+}
+
+/// Horizontally scrollable row of dismissible filter chips shown above the card slot.
+///
+/// Visible only when [filterState.isEmpty] is false (D-10, DISC-10).
+/// Each chip represents one active filter value. Tapping the chip's delete icon
+/// removes that value from [FilterSettingsNotifier], triggering a new card fetch.
+class _ActiveFilterBar extends ConsumerWidget {
+  const _ActiveFilterBar({required this.filterState});
+
+  final FilterSettings filterState;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notifier = ref.read(filterSettingsProvider.notifier);
+
+    return SizedBox(
+      height: AppSpacing.xl, // 32px — keeps bar compact, does not dominate card (D-10)
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        child: Row(
+          children: [
+            // Colour chips — labelled by MtgColor.displayName (D-11)
+            for (final color in filterState.colors)
+              Padding(
+                padding: const EdgeInsets.only(right: AppSpacing.xs),
+                child: FilterChip(
+                  label: Text(
+                    color.displayName,
+                    style: Theme.of(context).textTheme.labelSmall,
+                  ),
+                  selected: true,
+                  showCheckmark: false,
+                  onSelected: (_) => notifier.setColors(
+                    filterState.colors.difference({color}),
+                  ),
+                  deleteIcon: const Icon(Icons.close, size: AppSpacing.md),
+                  onDeleted: () => notifier.setColors(
+                    filterState.colors.difference({color}),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+            // Type chips
+            for (final type in filterState.types)
+              Padding(
+                padding: const EdgeInsets.only(right: AppSpacing.xs),
+                child: FilterChip(
+                  label: Text(
+                    type,
+                    style: Theme.of(context).textTheme.labelSmall,
+                  ),
+                  selected: true,
+                  showCheckmark: false,
+                  onSelected: (_) => notifier.setTypes(
+                    filterState.types.difference({type}),
+                  ),
+                  deleteIcon: const Icon(Icons.close, size: AppSpacing.md),
+                  onDeleted: () => notifier.setTypes(
+                    filterState.types.difference({type}),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+            // Rarity chips
+            for (final rarity in filterState.rarities)
+              Padding(
+                padding: const EdgeInsets.only(right: AppSpacing.xs),
+                child: FilterChip(
+                  label: Text(
+                    // Capitalize rarity display (e.g., 'common' → 'Common')
+                    rarity[0].toUpperCase() + rarity.substring(1),
+                    style: Theme.of(context).textTheme.labelSmall,
+                  ),
+                  selected: true,
+                  showCheckmark: false,
+                  onSelected: (_) => notifier.setRarities(
+                    filterState.rarities.difference({rarity}),
+                  ),
+                  deleteIcon: const Icon(Icons.close, size: AppSpacing.md),
+                  onDeleted: () => notifier.setRarities(
+                    filterState.rarities.difference({rarity}),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+            // Released After chip
+            if (filterState.releasedAfter != null)
+              Padding(
+                padding: const EdgeInsets.only(right: AppSpacing.xs),
+                child: FilterChip(
+                  label: Text(
+                    'After: ${_formatDate(filterState.releasedAfter!)}',
+                    style: Theme.of(context).textTheme.labelSmall,
+                  ),
+                  selected: true,
+                  showCheckmark: false,
+                  onSelected: (_) => notifier.setReleasedAfter(null),
+                  deleteIcon: const Icon(Icons.close, size: AppSpacing.md),
+                  onDeleted: () => notifier.setReleasedAfter(null),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+            // Released Before chip
+            if (filterState.releasedBefore != null)
+              Padding(
+                padding: const EdgeInsets.only(right: AppSpacing.xs),
+                child: FilterChip(
+                  label: Text(
+                    'Before: ${_formatDate(filterState.releasedBefore!)}',
+                    style: Theme.of(context).textTheme.labelSmall,
+                  ),
+                  selected: true,
+                  showCheckmark: false,
+                  onSelected: (_) => notifier.setReleasedBefore(null),
+                  deleteIcon: const Icon(Icons.close, size: AppSpacing.md),
+                  onDeleted: () => notifier.setReleasedBefore(null),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatDate(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 }
 
 /// Card-shaped error placeholder widget.

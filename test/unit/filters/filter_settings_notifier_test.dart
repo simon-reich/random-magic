@@ -143,7 +143,7 @@ void main() {
           .setColors({MtgColor.red});
       final query = container.read(activeFilterQueryProvider);
       expect(query, isNotNull);
-      expect(query, contains('color:R'));
+      expect(query, contains('color=R'));
     });
   });
 }
