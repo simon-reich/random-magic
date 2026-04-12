@@ -36,29 +36,30 @@ abstract final class ScryfallQueryBuilder {
 
     // Colour filter — split multicolor (M) from specific mono colours.
     //
-    // `color:X` in Scryfall means "contains X" (multicolor cards included).
-    // `color<=X` means "colours are a subset of {X}" — excludes multicolor cards
-    // that include colours beyond the selection.
-    // Using `<=` ensures that selecting Green only returns mono-green cards,
-    // not G/R or G/U multicolour cards.
+    // `color=X` in Scryfall means "exactly this colour" — mono-X only.
+    // This excludes colorless cards, multicolor cards, and any card that
+    // contains additional colours beyond X.
+    //
+    // Multiple mono selections are OR-joined so the user gets cards of ANY
+    // of the chosen colours, each as a pure mono card:
+    //   White + Blue → (color=W OR color=U)  — mono-white OR mono-blue only
+    //
+    // Multicolor (M) is appended as `color:m` when selected, so:
+    //   Green + Multicolor → (color=G OR color:m)
     if (settings.colors.isNotEmpty) {
       final hasMulticolor = settings.colors.contains(MtgColor.multicolor);
       final monoColors = settings.colors
           .where((c) => c != MtgColor.multicolor)
           .toList();
 
-      if (monoColors.isNotEmpty && hasMulticolor) {
-        // Specific colours + multicolor: subset clause OR multicolor
-        final codes = monoColors.map((c) => c.code).join('');
-        parts.add('(color<=$codes OR color:m)');
-      } else if (monoColors.isNotEmpty) {
-        // Specific colours only — exclude all multicolor cards via <=
-        final codes = monoColors.map((c) => c.code).join('');
-        parts.add('color<=$codes');
-      } else {
-        // Multicolor only
-        parts.add('color:m');
-      }
+      // Build one clause per mono colour (color=X) plus color:m if needed.
+      final clauses = <String>[
+        ...monoColors.map((c) => 'color=${c.code}'),
+        if (hasMulticolor) 'color:m',
+      ];
+
+      // Single clause needs no parens; multiple clauses need OR grouping.
+      parts.add(clauses.length == 1 ? clauses.first : '(${clauses.join(' OR ')})');
     }
 
     // Type filter: each value maps to `type:{name}`.

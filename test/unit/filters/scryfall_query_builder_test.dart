@@ -5,23 +5,21 @@ import 'package:random_magic/shared/models/mtg_color.dart';
 
 void main() {
   group('color filter', () {
-    test('single color uses subset operator to exclude multicolor (FILT-01)', () {
+    test('single color uses exact operator — mono only, no colorless or multicolor (FILT-01)', () {
       final result = ScryfallQueryBuilder.fromSettings(
         const FilterSettings(colors: {MtgColor.red}),
       );
-      expect(result, equals('color<=R'));
+      expect(result, equals('color=R'));
     });
 
-    test('multiple mono colors joined as single subset clause (FILT-01)', () {
+    test('multiple mono colors OR-joined as individual exact clauses (FILT-01)', () {
       final result = ScryfallQueryBuilder.fromSettings(
         const FilterSettings(colors: {MtgColor.white, MtgColor.blue}),
       );
-      // color<=WU — subset of {W,U}, no multicolor beyond W/U
-      expect(result, contains('color<='));
-      expect(result, contains('W'));
-      expect(result, contains('U'));
-      // Must NOT use OR for mono-only selection
-      expect(result, isNot(contains(' OR ')));
+      // (color=W OR color=U) — mono-white OR mono-blue, no W/U bicolor, no colorless
+      expect(result, contains('color=W'));
+      expect(result, contains('color=U'));
+      expect(result, contains(' OR '));
     });
 
     test('multicolor only uses color:m (FILT-01)', () {
@@ -31,11 +29,11 @@ void main() {
       expect(result, equals('color:m'));
     });
 
-    test('mono color + multicolor produces OR clause (FILT-01)', () {
+    test('mono color + multicolor produces OR with exact and color:m (FILT-01)', () {
       final result = ScryfallQueryBuilder.fromSettings(
         const FilterSettings(colors: {MtgColor.green, MtgColor.multicolor}),
       );
-      expect(result, contains('color<=G'));
+      expect(result, contains('color=G'));
       expect(result, contains('color:m'));
       expect(result, contains(' OR '));
     });
