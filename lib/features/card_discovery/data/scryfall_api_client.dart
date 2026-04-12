@@ -56,6 +56,7 @@ class ScryfallApiClient {
 
     if (statusCode == 404) return const CardNotFoundFailure();
     if (statusCode == 422) return const InvalidQueryFailure();
+    if (statusCode == 429) return const RateLimitedFailure();
 
     // Everything else (timeout, no internet, DNS failure, etc.) is a network error.
     return NetworkFailure(message: e.message);

@@ -39,3 +39,10 @@ final class NetworkFailure extends AppFailure {
   /// Optional underlying error description for debugging.
   final String? message;
 }
+
+/// Scryfall returned HTTP 429 — the app has exceeded the rate limit (10 req/s).
+///
+/// UI should show a "Too many requests" message and suggest waiting before retrying.
+final class RateLimitedFailure extends AppFailure {
+  const RateLimitedFailure();
+}

@@ -82,7 +82,8 @@ class MagicCard {
       releasedAt: json['released_at'] as String,
       imageUris: CardImageUris.fromJson(rawImageUris),
       prices: rawPrices != null ? CardPrices.fromJson(rawPrices) : null,
-      legalities: rawLegalities.cast<String, String>(),
+      // Defensive conversion — avoids Map<dynamic, dynamic> cast errors from Scryfall JSON.
+      legalities: rawLegalities.map((k, v) => MapEntry(k.toString(), v.toString())),
     );
   }
 
