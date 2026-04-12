@@ -101,6 +101,7 @@ class _CardSwipeScreenState extends ConsumerState<CardSwipeScreen> {
     return CardSwiper(
       controller: _swiperController,
       cardsCount: 1,
+      numberOfCardsDisplayed: 1, // must not exceed cardsCount
       isDisabled: isLoading, // always false — swipe gating achieved by widget replacement in the loading: branch
       onSwipe: (previousIndex, currentIndex, direction) {
         // Both left and right load the next random card (D-07).
