@@ -37,12 +37,12 @@
 - `RandomCardNotifier` marked `keepAlive: true` to survive tab navigation
 - `activeFilterQueryProvider` scaffolded as null stub (no UI — just one provider file)
 
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 
 Plans:
-- [ ] 01-01-PLAN.md — Add flutter_card_swiper + skeletonizer to pubspec; configure SkeletonizerConfigData.dark() in AppTheme
-- [ ] 01-02-PLAN.md — Add RateLimitedFailure; fix legalities parsing; scaffold activeFilterQueryProvider stub; mark RandomCardNotifier keepAlive
-- [ ] 01-03-PLAN.md — Implement CardSwipeScreen — full card face, swipe gestures, REVEAL overlay, skeletonizer loading, three card-shaped error states
+- [x] 01-01-PLAN.md — Add flutter_card_swiper + skeletonizer to pubspec; configure SkeletonizerConfigData.dark() in AppTheme
+- [x] 01-02-PLAN.md — Add RateLimitedFailure; fix legalities parsing; scaffold activeFilterQueryProvider stub; mark RandomCardNotifier keepAlive
+- [x] 01-03-PLAN.md — Implement CardSwipeScreen — full card face, swipe gestures, REVEAL overlay, skeletonizer loading, three card-shaped error states
 
 **UAT:**
 - [ ] Swipe left or right loads a new random card (shimmer shown during load)

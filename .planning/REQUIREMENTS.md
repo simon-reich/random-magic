@@ -21,15 +21,15 @@ Infrastructure already shipped and working:
 
 ### Discovery (Swipe Screen)
 
-- [ ] **DISC-01**: Swiping left or right on the card loads the next random card
-- [ ] **DISC-02**: Card artwork is displayed full-screen using `CachedNetworkImage`
-- [ ] **DISC-03**: Card name, mana cost, type line, and rarity are shown in an overlay at the bottom of the card
-- [ ] **DISC-04**: A shimmer/skeleton loading state is shown while the image and data load
-- [ ] **DISC-05**: A "No cards found" empty state is shown when Scryfall returns 404 (no matches for current filters), with an "Adjust Filters" button
-- [ ] **DISC-06**: An "Invalid filter settings" error state is shown for Scryfall 422 responses, with a link to filter settings
-- [ ] **DISC-07**: A "Could not reach Scryfall" network error state is shown for timeouts/connectivity failures, with a Retry button
-- [ ] **DISC-08**: The screen auto-fetches a card on first load without user interaction
-- [ ] **DISC-09**: All three error states are visually distinct from each other and from the loading state
+- [x] **DISC-01**: Swiping left or right on the card loads the next random card
+- [x] **DISC-02**: Card artwork is displayed full-screen using `CachedNetworkImage`
+- [x] **DISC-03**: Card name, mana cost, type line, and rarity are shown in an overlay at the bottom of the card
+- [x] **DISC-04**: A shimmer/skeleton loading state is shown while the image and data load
+- [x] **DISC-05**: A "No cards found" empty state is shown when Scryfall returns 404 (no matches for current filters), with an "Adjust Filters" button
+- [x] **DISC-06**: An "Invalid filter settings" error state is shown for Scryfall 422 responses, with a link to filter settings
+- [x] **DISC-07**: A "Could not reach Scryfall" network error state is shown for timeouts/connectivity failures, with a Retry button
+- [x] **DISC-08**: The screen auto-fetches a card on first load without user interaction
+- [x] **DISC-09**: All three error states are visually distinct from each other and from the loading state
 - [ ] **DISC-10**: An active filter summary bar shows currently active filter chips above the card; tapping a chip removes that filter
 
 ### Filters
@@ -68,7 +68,7 @@ Infrastructure already shipped and working:
 - [ ] **QA-01**: `flutter analyze --fatal-infos` passes with zero warnings
 - [ ] **QA-02**: All async operations have loading, success, and error states handled in the UI
 - [ ] **QA-03**: No hardcoded colours or magic numbers — all from `AppColors` / `AppSpacing`
-- [ ] **QA-04**: Null card image URLs are guarded before passing to `CachedNetworkImage`
+- [x] **QA-04**: Null card image URLs are guarded before passing to `CachedNetworkImage`
 - [ ] **QA-05**: HTTP 429 (rate limited) is mapped to a typed `RateLimitedFailure` and shown to the user with a meaningful message
 - [ ] **QA-06**: `legalities` map parsing is defensive (`.toString()` conversion, not `.cast<String, String>()`)
 
@@ -120,15 +120,15 @@ Infrastructure already shipped and working:
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DISC-01 | Phase 1 | Pending |
-| DISC-02 | Phase 1 | Pending |
-| DISC-03 | Phase 1 | Pending |
-| DISC-04 | Phase 1 | Pending |
-| DISC-05 | Phase 1 | Pending |
-| DISC-06 | Phase 1 | Pending |
-| DISC-07 | Phase 1 | Pending |
-| DISC-08 | Phase 1 | Pending |
-| DISC-09 | Phase 1 | Pending |
+| DISC-01 | Phase 1 | Complete |
+| DISC-02 | Phase 1 | Complete |
+| DISC-03 | Phase 1 | Complete |
+| DISC-04 | Phase 1 | Complete |
+| DISC-05 | Phase 1 | Complete |
+| DISC-06 | Phase 1 | Complete |
+| DISC-07 | Phase 1 | Complete |
+| DISC-08 | Phase 1 | Complete |
+| DISC-09 | Phase 1 | Complete |
 | DISC-10 | Phase 2 | Pending |
 | FILT-01 | Phase 2 | Pending |
 | FILT-02 | Phase 2 | Pending |
@@ -155,7 +155,7 @@ Infrastructure already shipped and working:
 | QA-01 | All Phases | Pending |
 | QA-02 | All Phases | Pending |
 | QA-03 | All Phases | Pending |
-| QA-04 | Phase 1 | Pending |
+| QA-04 | Phase 1 | Complete |
 | QA-05 | Phase 1 | Pending |
 | QA-06 | Phase 1 | Pending |
 | TEST-01 | Phase 5 | Pending |
