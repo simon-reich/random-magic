@@ -5,27 +5,39 @@ import 'package:random_magic/shared/models/mtg_color.dart';
 
 void main() {
   group('color filter', () {
-    test('single color returns correct query string (FILT-01)', () {
+    test('single color uses subset operator to exclude multicolor (FILT-01)', () {
       final result = ScryfallQueryBuilder.fromSettings(
         const FilterSettings(colors: {MtgColor.red}),
       );
-      expect(result, contains('color:R'));
+      expect(result, equals('color<=R'));
     });
 
-    test('multiple colors joined with OR (FILT-01)', () {
+    test('multiple mono colors joined as single subset clause (FILT-01)', () {
       final result = ScryfallQueryBuilder.fromSettings(
         const FilterSettings(colors: {MtgColor.white, MtgColor.blue}),
       );
-      expect(result, contains('color:W'));
-      expect(result, contains('color:U'));
-      expect(result, contains(' OR '));
+      // color<=WU — subset of {W,U}, no multicolor beyond W/U
+      expect(result, contains('color<='));
+      expect(result, contains('W'));
+      expect(result, contains('U'));
+      // Must NOT use OR for mono-only selection
+      expect(result, isNot(contains(' OR ')));
     });
 
-    test('multicolor (M) uses correct Scryfall syntax (FILT-01)', () {
+    test('multicolor only uses color:m (FILT-01)', () {
       final result = ScryfallQueryBuilder.fromSettings(
         const FilterSettings(colors: {MtgColor.multicolor}),
       );
+      expect(result, equals('color:m'));
+    });
+
+    test('mono color + multicolor produces OR clause (FILT-01)', () {
+      final result = ScryfallQueryBuilder.fromSettings(
+        const FilterSettings(colors: {MtgColor.green, MtgColor.multicolor}),
+      );
+      expect(result, contains('color<=G'));
       expect(result, contains('color:m'));
+      expect(result, contains(' OR '));
     });
 
     test('no colors selected produces no color clause (FILT-01)', () {
@@ -33,7 +45,7 @@ void main() {
         const FilterSettings(types: {'Creature'}),
       );
       expect(result, isNotNull);
-      expect(result, isNot(contains('color:')));
+      expect(result, isNot(contains('color')));
     });
   });
 

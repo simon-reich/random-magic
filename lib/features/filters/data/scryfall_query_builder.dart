@@ -1,4 +1,5 @@
 import 'package:random_magic/features/filters/domain/filter_settings.dart';
+import 'package:random_magic/shared/models/mtg_color.dart';
 
 /// Converts a [FilterSettings] snapshot into a Scryfall query string.
 ///
@@ -12,11 +13,20 @@ abstract final class ScryfallQueryBuilder {
   /// Returns `null` when [settings.isEmpty] is true, which tells callers
   /// to omit the `q` parameter entirely (FILT-10 — unrestricted random card).
   ///
-  /// Each non-empty filter group is enclosed in parentheses and joined with a
-  /// single space. Multiple values within a group are joined with ` OR `.
+  /// **Colour filter semantics:**
+  /// - Non-multicolor colours only → `color<={codes}` (Scryfall "subset" operator).
+  ///   This means the card's colour set must be a subset of the selected colours,
+  ///   so multicolor cards containing other colours are excluded.
+  ///   E.g. Green only → `color<=G` returns mono-green cards, not G/R or G/U.
+  /// - [MtgColor.multicolor] only → `color:m` (any multicolor card).
+  /// - Specific colours + multicolor → `(color<={codes} OR color:m)`.
+  ///   E.g. Green + Multicolor → `(color<=G OR color:m)`.
+  ///
+  /// Other filter groups (type, rarity) are ORed within their group and
+  /// joined with a single space between groups.
   ///
   /// Examples:
-  /// - `fromSettings(FilterSettings(colors: {MtgColor.red}))` → `'(color:R)'`
+  /// - `fromSettings(FilterSettings(colors: {MtgColor.red}))` → `'color<=R'`
   /// - `fromSettings(FilterSettings(types: {'Creature', 'Instant'}))` → `'(type:Creature OR type:Instant)'`
   /// - `fromSettings(FilterSettings(releasedAfter: DateTime(2020,1,1)))` → `'date>=2020-01-01'`
   static String? fromSettings(FilterSettings settings) {
@@ -24,11 +34,31 @@ abstract final class ScryfallQueryBuilder {
 
     final parts = <String>[];
 
-    // Color filter: each MtgColor maps to `color:{code}`.
-    // multicolor.code is already 'm', so no special case needed.
+    // Colour filter — split multicolor (M) from specific mono colours.
+    //
+    // `color:X` in Scryfall means "contains X" (multicolor cards included).
+    // `color<=X` means "colours are a subset of {X}" — excludes multicolor cards
+    // that include colours beyond the selection.
+    // Using `<=` ensures that selecting Green only returns mono-green cards,
+    // not G/R or G/U multicolour cards.
     if (settings.colors.isNotEmpty) {
-      final clauses = settings.colors.map((c) => 'color:${c.code}').toList();
-      parts.add('(${clauses.join(' OR ')})');
+      final hasMulticolor = settings.colors.contains(MtgColor.multicolor);
+      final monoColors = settings.colors
+          .where((c) => c != MtgColor.multicolor)
+          .toList();
+
+      if (monoColors.isNotEmpty && hasMulticolor) {
+        // Specific colours + multicolor: subset clause OR multicolor
+        final codes = monoColors.map((c) => c.code).join('');
+        parts.add('(color<=$codes OR color:m)');
+      } else if (monoColors.isNotEmpty) {
+        // Specific colours only — exclude all multicolor cards via <=
+        final codes = monoColors.map((c) => c.code).join('');
+        parts.add('color<=$codes');
+      } else {
+        // Multicolor only
+        parts.add('color:m');
+      }
     }
 
     // Type filter: each value maps to `type:{name}`.
