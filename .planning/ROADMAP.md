@@ -46,7 +46,7 @@ Plans:
 
 **UAT:**
 - [ ] Swipe left or right loads a new random card (shimmer shown during load)
-- [ ] Card artwork fills the screen; name, type line, rarity visible in bottom overlay
+- [ ] Full card face image (name, type line, rarity baked into card image) fills the card slot — no separate metadata overlay
 - [ ] Swiping while loading is ignored (no race condition)
 - [ ] 404 → distinct "No cards found" state with "Adjust Filters" button
 - [ ] 422 → distinct "Invalid filter settings" state with filter link
