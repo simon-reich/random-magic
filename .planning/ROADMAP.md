@@ -37,10 +37,12 @@
 - `RandomCardNotifier` marked `keepAlive: true` to survive tab navigation
 - `activeFilterQueryProvider` scaffolded as null stub (no UI — just one provider file)
 
-**Plans:**
-1. Add `flutter_card_swiper` + `skeletonizer` to pubspec; run `flutter pub get`
-2. Add `RateLimitedFailure` to `shared/failures.dart`; fix `legalities` cast in `MagicCard.fromJson()`; scaffold `activeFilterQueryProvider` null stub
-3. Implement `CardSwipeScreen` — artwork display, metadata overlay, swipe gestures, directional overlays, action buttons, loading + error states
+**Plans:** 3 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Add flutter_card_swiper + skeletonizer to pubspec; configure SkeletonizerConfigData.dark() in AppTheme
+- [ ] 01-02-PLAN.md — Add RateLimitedFailure; fix legalities parsing; scaffold activeFilterQueryProvider stub; mark RandomCardNotifier keepAlive
+- [ ] 01-03-PLAN.md — Implement CardSwipeScreen — full card face, swipe gestures, REVEAL overlay, skeletonizer loading, three card-shaped error states
 
 **UAT:**
 - [ ] Swipe left or right loads a new random card (shimmer shown during load)
@@ -203,4 +205,4 @@ Key decisions from research that influenced this roadmap:
 
 ---
 *Roadmap created: 2026-04-10*
-*Last updated: 2026-04-10 after initial creation*
+*Last updated: 2026-04-12 — Phase 1 plans created (01-01, 01-02, 01-03)*
