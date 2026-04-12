@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 /// Colour palette for Random Magic.
 ///
@@ -31,6 +32,9 @@ abstract final class AppColors {
   // Semantic
   /// Error red.
   static const Color error = Color(0xFFCF6679);
+
+  /// Blue-grey accent used for network-unreachable and rate-limit error states.
+  static const Color networkError = Color(0xFF607D8B);
 }
 
 /// Provides the [ThemeData] for the Random Magic app.
@@ -130,6 +134,11 @@ abstract final class AppTheme {
           shape: const StadiumBorder(),
         ),
       ),
+      // Register dark shimmer palette globally so every Skeletonizer widget
+      // picks up dark colours without requiring per-widget configuration.
+      extensions: const [
+        SkeletonizerConfigData.dark(),
+      ],
     );
   }
 }
