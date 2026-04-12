@@ -2,6 +2,7 @@ import 'package:random_magic/core/network/dio_client.dart';
 import 'package:random_magic/features/card_discovery/data/card_repository_impl.dart';
 import 'package:random_magic/features/card_discovery/data/scryfall_api_client.dart';
 import 'package:random_magic/features/card_discovery/domain/card_repository.dart';
+import 'package:random_magic/features/filters/presentation/providers.dart';
 import 'package:random_magic/shared/models/magic_card.dart';
 import 'package:random_magic/shared/result.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -28,10 +29,13 @@ CardRepository cardRepository(Ref ref) {
 /// to render the appropriate UI state.
 ///
 /// Call [randomCardNotifier.refresh] to fetch a new random card (e.g. on swipe).
-@riverpod
+@Riverpod(keepAlive: true)
 class RandomCardNotifier extends _$RandomCardNotifier {
   @override
-  Future<MagicCard> build() => _fetch();
+  Future<MagicCard> build() {
+    final query = ref.watch(activeFilterQueryProvider);
+    return _fetch(query: query);
+  }
 
   /// Fetches a fresh random card, replacing the current state.
   Future<void> refresh() async {

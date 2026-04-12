@@ -142,7 +142,7 @@ final class RandomCardNotifierProvider
         argument: null,
         retry: null,
         name: r'randomCardProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -156,7 +156,7 @@ final class RandomCardNotifierProvider
 }
 
 String _$randomCardNotifierHash() =>
-    r'1b7a5f16afc9a5c631c5e7af84135ed68570e0e4';
+    r'67d7900c032390b97e1de3760f7b600aa9aa48b7';
 
 /// Manages the state of the currently displayed random card.
 ///
