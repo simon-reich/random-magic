@@ -34,13 +34,20 @@ class RandomCardNotifier extends _$RandomCardNotifier {
   @override
   Future<MagicCard> build() {
     final query = ref.watch(activeFilterQueryProvider);
+    // Watch the refresh signal so a preset tap always triggers a new fetch,
+    // even when the query string hasn't changed (same preset re-selected).
+    ref.watch(filterRefreshSignalProvider);
     return _fetch(query: query);
   }
 
-  /// Fetches a fresh random card, replacing the current state.
+  /// Fetches a fresh random card using the current filter query.
+  ///
+  /// Reads [activeFilterQueryProvider] at call time so the filter set after
+  /// the last [build] is always honoured — not just on the first swipe.
   Future<void> refresh() async {
+    final query = ref.read(activeFilterQueryProvider);
     state = const AsyncLoading();
-    state = await AsyncValue.guard(_fetch);
+    state = await AsyncValue.guard(() => _fetch(query: query));
   }
 
   Future<MagicCard> _fetch({String? query}) async {

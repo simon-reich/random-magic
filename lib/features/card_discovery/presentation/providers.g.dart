@@ -156,7 +156,7 @@ final class RandomCardNotifierProvider
 }
 
 String _$randomCardNotifierHash() =>
-    r'67d7900c032390b97e1de3760f7b600aa9aa48b7';
+    r'ebac7c2ca2fb36d489c6ed803fd6ff25f0e67b53';
 
 /// Manages the state of the currently displayed random card.
 ///

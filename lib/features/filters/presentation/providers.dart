@@ -7,6 +7,32 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'providers.g.dart';
 
+/// Tracks the name of the last-loaded preset for dirty-state display (D-12).
+///
+/// A separate provider so that [FilterSettingsScreen] can [ref.watch] it and
+/// rebuild the chip label immediately when a preset is loaded — even if the
+/// filter state itself hasn't changed (e.g. same preset re-selected).
+/// Cleared by any mutation method on [FilterSettingsNotifier].
+@Riverpod(keepAlive: true)
+class ActivePresetName extends _$ActivePresetName {
+  @override
+  String? build() => null;
+
+  /// Sets the active preset name. Called by [FilterSettingsNotifier.loadPreset].
+  void setName(String? name) => state = name;
+}
+
+/// Incremented whenever a preset is applied, so [RandomCardNotifier] re-fetches
+/// even when the filter query string hasn't changed (e.g. same preset tapped twice).
+@Riverpod(keepAlive: true)
+class FilterRefreshSignal extends _$FilterRefreshSignal {
+  @override
+  int build() => 0;
+
+  /// Increments the signal, triggering a rebuild of any provider that watches it.
+  void trigger() => state++;
+}
+
 /// Manages the live filter state for the current session.
 ///
 /// State is kept alive across tab navigation ([keepAlive: true]).
@@ -14,37 +40,35 @@ part 'providers.g.dart';
 /// which [RandomCardNotifier] watches — triggering a new card fetch (D-13, FILT-05).
 @Riverpod(keepAlive: true)
 class FilterSettingsNotifier extends _$FilterSettingsNotifier {
-  /// Tracks the name of the last-loaded preset (D-12).
-  ///
-  /// Set by [loadPreset] and cleared by any mutation method. Transient — not
-  /// persisted. Used by [FilterSettingsScreen] to render the `*` dirty-state
-  /// suffix on the active preset chip.
-  String? activePresetName;
+  /// The name of the last-loaded preset, or null if filters have been modified
+  /// since loading (D-12). Backed by [activePresetNameProvider] so the screen
+  /// always rebuilds immediately when this changes.
+  String? get activePresetName => ref.read(activePresetNameProvider);
 
   @override
   FilterSettings build() => const FilterSettings();
 
   /// Replaces the active colour selection. Clears [activePresetName] (D-12).
   void setColors(Set<MtgColor> colors) {
-    activePresetName = null;
+    ref.read(activePresetNameProvider.notifier).setName(null);
     state = state.copyWith(colors: colors);
   }
 
   /// Replaces the active card type selection. Clears [activePresetName] (D-12).
   void setTypes(Set<String> types) {
-    activePresetName = null;
+    ref.read(activePresetNameProvider.notifier).setName(null);
     state = state.copyWith(types: types);
   }
 
   /// Replaces the active rarity selection. Clears [activePresetName] (D-12).
   void setRarities(Set<String> rarities) {
-    activePresetName = null;
+    ref.read(activePresetNameProvider.notifier).setName(null);
     state = state.copyWith(rarities: rarities);
   }
 
   /// Sets or clears the Released After date bound. Clears [activePresetName] (D-12).
   void setReleasedAfter(DateTime? date) {
-    activePresetName = null;
+    ref.read(activePresetNameProvider.notifier).setName(null);
     state = date == null
         ? state.copyWith(clearReleasedAfter: true)
         : state.copyWith(releasedAfter: date);
@@ -52,7 +76,7 @@ class FilterSettingsNotifier extends _$FilterSettingsNotifier {
 
   /// Sets or clears the Released Before date bound. Clears [activePresetName] (D-12).
   void setReleasedBefore(DateTime? date) {
-    activePresetName = null;
+    ref.read(activePresetNameProvider.notifier).setName(null);
     state = date == null
         ? state.copyWith(clearReleasedBefore: true)
         : state.copyWith(releasedBefore: date);
@@ -63,14 +87,14 @@ class FilterSettingsNotifier extends _$FilterSettingsNotifier {
   /// Sets [activePresetName] to [presetName] so the UI can show the dirty-state
   /// `*` suffix when the user later modifies a filter (D-07, D-12).
   void loadPreset(FilterSettings settings, {String? presetName}) {
-    activePresetName = presetName;
+    ref.read(activePresetNameProvider.notifier).setName(presetName);
     state = settings;
   }
 
   /// Clears all filters, returning to the unrestricted query state (FILT-10).
   /// Also clears [activePresetName].
   void reset() {
-    activePresetName = null;
+    ref.read(activePresetNameProvider.notifier).setName(null);
     state = const FilterSettings();
   }
 }

@@ -64,6 +64,9 @@ class _FilterSettingsScreenState extends ConsumerState<FilterSettingsScreen> {
     final notifier = ref.read(filterSettingsProvider.notifier);
     final presets = ref.watch(filterPresetsProvider);
     final presetsNotifier = ref.read(filterPresetsProvider.notifier);
+    // Watch activePresetNameProvider so chip labels rebuild immediately when a
+    // preset is loaded or any filter is mutated (D-12 dirty-state tracking).
+    final activePresetName = ref.watch(activePresetNameProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -80,43 +83,45 @@ class _FilterSettingsScreenState extends ConsumerState<FilterSettingsScreen> {
             if (presets.isNotEmpty) ...[
               _sectionHeader(context, 'Presets'),
               const SizedBox(height: AppSpacing.xs),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: presets
-                      .map(
-                        (preset) => Padding(
-                          padding: const EdgeInsets.only(right: AppSpacing.xs),
-                          child: InputChip(
-                            label: Text(
-                              // D-12: show * suffix while loaded and unmodified
-                              notifier.activePresetName == preset.name
-                                  ? '${preset.name}*'
-                                  : preset.name,
-                            ),
-                            backgroundColor: AppColors.surfaceContainer,
-                            labelStyle: const TextStyle(
-                              color: AppColors.onBackground,
-                            ),
-                            deleteIcon: const Icon(
-                              Icons.close,
-                              size: AppSpacing.md,
-                            ),
-                            onPressed: () {
-                              // D-07: load preset then navigate to Discover
-                              notifier.loadPreset(
-                                preset.settings,
-                                presetName: preset.name,
-                              );
-                              context.go(AppRoutes.discovery);
-                            },
-                            onDeleted: () =>
-                                presetsNotifier.delete(preset.name),
-                          ),
+              // Wrap so chips flow into multiple lines — never overflow/clip.
+              Wrap(
+                spacing: AppSpacing.xs,
+                runSpacing: AppSpacing.xs,
+                children: presets
+                    .map(
+                      (preset) => InputChip(
+                        label: Text(
+                          // D-12: * suffix shows while this preset is loaded
+                          // and no filter has been mutated since. Watched via
+                          // activePresetNameProvider for immediate rebuilds.
+                          activePresetName == preset.name
+                              ? '${preset.name}*'
+                              : preset.name,
                         ),
-                      )
-                      .toList(),
-                ),
+                        backgroundColor: AppColors.surfaceContainer,
+                        labelStyle: const TextStyle(
+                          color: AppColors.onBackground,
+                        ),
+                        deleteIcon: const Icon(
+                          Icons.close,
+                          size: AppSpacing.md,
+                        ),
+                        onPressed: () {
+                          // D-07: load preset, fire refresh signal (triggers
+                          // new card even if query unchanged), then navigate.
+                          notifier.loadPreset(
+                            preset.settings,
+                            presetName: preset.name,
+                          );
+                          ref
+                              .read(filterRefreshSignalProvider.notifier)
+                              .trigger();
+                          context.go(AppRoutes.discovery);
+                        },
+                        onDeleted: () => presetsNotifier.delete(preset.name),
+                      ),
+                    )
+                    .toList(),
               ),
               const SizedBox(height: AppSpacing.md),
             ],
@@ -159,8 +164,8 @@ class _FilterSettingsScreenState extends ConsumerState<FilterSettingsScreen> {
                     (type) => FilterChip(
                       label: Text(type),
                       selected: filterState.types.contains(type),
+                      showCheckmark: false,
                       selectedColor: AppColors.primary.withValues(alpha: 0.2),
-                      checkmarkColor: AppColors.primary,
                       onSelected: (selected) {
                         final current = filterState.types;
                         notifier.setTypes(
@@ -186,8 +191,8 @@ class _FilterSettingsScreenState extends ConsumerState<FilterSettingsScreen> {
                     ((String, String) entry) => FilterChip(
                       label: Text(entry.$2),
                       selected: filterState.rarities.contains(entry.$1),
+                      showCheckmark: false,
                       selectedColor: AppColors.primary.withValues(alpha: 0.2),
-                      checkmarkColor: AppColors.primary,
                       onSelected: (selected) {
                         final current = filterState.rarities;
                         notifier.setRarities(
