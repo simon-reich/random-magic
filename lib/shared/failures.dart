@@ -46,3 +46,10 @@ final class NetworkFailure extends AppFailure {
 final class RateLimitedFailure extends AppFailure {
   const RateLimitedFailure();
 }
+
+/// A preset with the same name already exists (FILT-09).
+///
+/// UI should display an inline validation error below the preset name field.
+final class DuplicatePresetNameFailure extends AppFailure {
+  const DuplicatePresetNameFailure();
+}
