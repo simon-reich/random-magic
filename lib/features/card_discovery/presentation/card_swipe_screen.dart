@@ -266,118 +266,126 @@ class _ActiveFilterBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(filterSettingsProvider.notifier);
 
-    return SizedBox(
-      height: AppSpacing.xl, // 32px — keeps bar compact, does not dominate card (D-10)
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-        child: Row(
-          children: [
-            // Colour chips — labelled by MtgColor.displayName (D-11)
-            for (final color in filterState.colors)
-              Padding(
-                padding: const EdgeInsets.only(right: AppSpacing.xs),
-                child: FilterChip(
-                  label: Text(
-                    color.displayName,
-                    style: Theme.of(context).textTheme.labelSmall,
-                  ),
-                  selected: true,
-                  showCheckmark: false,
-                  onSelected: (_) => notifier.setColors(
-                    filterState.colors.difference({color}),
-                  ),
-                  deleteIcon: const Icon(Icons.close, size: AppSpacing.md),
-                  onDeleted: () => notifier.setColors(
-                    filterState.colors.difference({color}),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-                  visualDensity: VisualDensity.compact,
-                ),
+    // Wrap breaks chips into multiple lines when many filters are active.
+    // labelSmall is overridden to AppColors.background — the default onSurfaceMuted
+    // (grey) is unreadable against the gold (primary) selected chip background.
+    final chipLabelStyle = Theme.of(context)
+        .textTheme
+        .labelSmall
+        ?.copyWith(color: AppColors.background);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.xs,
+      ),
+      child: Wrap(
+        spacing: AppSpacing.xs,
+        runSpacing: AppSpacing.xs,
+        children: [
+          // Colour chips — labelled by MtgColor.displayName (D-11)
+          for (final color in filterState.colors)
+            FilterChip(
+              label: Text(color.displayName, style: chipLabelStyle),
+              selected: true,
+              showCheckmark: false,
+              onSelected: (_) => notifier.setColors(
+                filterState.colors.difference({color}),
               ),
-            // Type chips
-            for (final type in filterState.types)
-              Padding(
-                padding: const EdgeInsets.only(right: AppSpacing.xs),
-                child: FilterChip(
-                  label: Text(
-                    type,
-                    style: Theme.of(context).textTheme.labelSmall,
-                  ),
-                  selected: true,
-                  showCheckmark: false,
-                  onSelected: (_) => notifier.setTypes(
-                    filterState.types.difference({type}),
-                  ),
-                  deleteIcon: const Icon(Icons.close, size: AppSpacing.md),
-                  onDeleted: () => notifier.setTypes(
-                    filterState.types.difference({type}),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-                  visualDensity: VisualDensity.compact,
-                ),
+              deleteIcon: Icon(
+                Icons.close,
+                size: AppSpacing.md,
+                color: AppColors.background,
               ),
-            // Rarity chips
-            for (final rarity in filterState.rarities)
-              Padding(
-                padding: const EdgeInsets.only(right: AppSpacing.xs),
-                child: FilterChip(
-                  label: Text(
-                    // Capitalize rarity display (e.g., 'common' → 'Common')
-                    rarity[0].toUpperCase() + rarity.substring(1),
-                    style: Theme.of(context).textTheme.labelSmall,
-                  ),
-                  selected: true,
-                  showCheckmark: false,
-                  onSelected: (_) => notifier.setRarities(
-                    filterState.rarities.difference({rarity}),
-                  ),
-                  deleteIcon: const Icon(Icons.close, size: AppSpacing.md),
-                  onDeleted: () => notifier.setRarities(
-                    filterState.rarities.difference({rarity}),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-                  visualDensity: VisualDensity.compact,
-                ),
+              onDeleted: () => notifier.setColors(
+                filterState.colors.difference({color}),
               ),
-            // Released After chip
-            if (filterState.releasedAfter != null)
-              Padding(
-                padding: const EdgeInsets.only(right: AppSpacing.xs),
-                child: FilterChip(
-                  label: Text(
-                    'After: ${_formatDate(filterState.releasedAfter!)}',
-                    style: Theme.of(context).textTheme.labelSmall,
-                  ),
-                  selected: true,
-                  showCheckmark: false,
-                  onSelected: (_) => notifier.setReleasedAfter(null),
-                  deleteIcon: const Icon(Icons.close, size: AppSpacing.md),
-                  onDeleted: () => notifier.setReleasedAfter(null),
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-                  visualDensity: VisualDensity.compact,
-                ),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+              visualDensity: VisualDensity.compact,
+            ),
+          // Type chips
+          for (final type in filterState.types)
+            FilterChip(
+              label: Text(type, style: chipLabelStyle),
+              selected: true,
+              showCheckmark: false,
+              onSelected: (_) => notifier.setTypes(
+                filterState.types.difference({type}),
               ),
-            // Released Before chip
-            if (filterState.releasedBefore != null)
-              Padding(
-                padding: const EdgeInsets.only(right: AppSpacing.xs),
-                child: FilterChip(
-                  label: Text(
-                    'Before: ${_formatDate(filterState.releasedBefore!)}',
-                    style: Theme.of(context).textTheme.labelSmall,
-                  ),
-                  selected: true,
-                  showCheckmark: false,
-                  onSelected: (_) => notifier.setReleasedBefore(null),
-                  deleteIcon: const Icon(Icons.close, size: AppSpacing.md),
-                  onDeleted: () => notifier.setReleasedBefore(null),
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-                  visualDensity: VisualDensity.compact,
-                ),
+              deleteIcon: Icon(
+                Icons.close,
+                size: AppSpacing.md,
+                color: AppColors.background,
               ),
-          ],
-        ),
+              onDeleted: () => notifier.setTypes(
+                filterState.types.difference({type}),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+              visualDensity: VisualDensity.compact,
+            ),
+          // Rarity chips
+          for (final rarity in filterState.rarities)
+            FilterChip(
+              // Capitalize rarity display (e.g., 'common' → 'Common')
+              label: Text(
+                rarity[0].toUpperCase() + rarity.substring(1),
+                style: chipLabelStyle,
+              ),
+              selected: true,
+              showCheckmark: false,
+              onSelected: (_) => notifier.setRarities(
+                filterState.rarities.difference({rarity}),
+              ),
+              deleteIcon: Icon(
+                Icons.close,
+                size: AppSpacing.md,
+                color: AppColors.background,
+              ),
+              onDeleted: () => notifier.setRarities(
+                filterState.rarities.difference({rarity}),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+              visualDensity: VisualDensity.compact,
+            ),
+          // Released After chip
+          if (filterState.releasedAfter != null)
+            FilterChip(
+              label: Text(
+                'After: ${_formatDate(filterState.releasedAfter!)}',
+                style: chipLabelStyle,
+              ),
+              selected: true,
+              showCheckmark: false,
+              onSelected: (_) => notifier.setReleasedAfter(null),
+              deleteIcon: Icon(
+                Icons.close,
+                size: AppSpacing.md,
+                color: AppColors.background,
+              ),
+              onDeleted: () => notifier.setReleasedAfter(null),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+              visualDensity: VisualDensity.compact,
+            ),
+          // Released Before chip
+          if (filterState.releasedBefore != null)
+            FilterChip(
+              label: Text(
+                'Before: ${_formatDate(filterState.releasedBefore!)}',
+                style: chipLabelStyle,
+              ),
+              selected: true,
+              showCheckmark: false,
+              onSelected: (_) => notifier.setReleasedBefore(null),
+              deleteIcon: Icon(
+                Icons.close,
+                size: AppSpacing.md,
+                color: AppColors.background,
+              ),
+              onDeleted: () => notifier.setReleasedBefore(null),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+              visualDensity: VisualDensity.compact,
+            ),
+        ],
       ),
     );
   }

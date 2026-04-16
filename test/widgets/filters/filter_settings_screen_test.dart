@@ -1,7 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:random_magic/features/filters/presentation/filter_settings_screen.dart';
 
 // Wave 0 stubs — all test bodies are skipped until Plan 04 implements the
 // FilterSettingsScreen with colour toggles, type chips, rarity chips, date

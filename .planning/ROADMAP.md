@@ -8,9 +8,9 @@
 
 | Phase | Name | Goal | Status |
 |-------|------|------|--------|
-| Phase 1 | CardSwipeScreen | Working swipe UI with artwork, metadata overlay, loading & error states | 🔲 Next |
-| Phase 2 | Filter Settings & Presets | Filter UI wired to Scryfall query, named preset persistence | 🔲 Pending |
-| Phase 3 | Favourites | Save / browse / delete favourites with Hive CE persistence | 🔲 Pending |
+| Phase 1 | CardSwipeScreen | Working swipe UI with artwork, metadata overlay, loading & error states | ✅ Done |
+| Phase 2 | Filter Settings & Presets | Filter UI wired to Scryfall query, named preset persistence | ✅ Done |
+| Phase 3 | Favourites | Save / browse / delete favourites with Hive CE persistence | 🔲 Next |
 | Phase 4 | Card Detail View | Full card metadata, prices, format legalities | 🔲 Pending |
 | Phase 5 | Tests | 80%+ logic coverage, all screen states tested, integration test | 🔲 Pending |
 
@@ -77,20 +77,20 @@ Plans:
 **Plans:** 5 plans
 
 Plans:
-- [ ] 02-00-PLAN.md — Wave 0: create test stubs (scryfall_query_builder_test, filter_settings_notifier_test, filter_presets_notifier_test, widget stubs, fake_preset fixture)
-- [ ] 02-01-PLAN.md — Add flutter_svg to pubspec; create MtgColor enum, FilterSettings, FilterPreset + FilterPresetAdapter (typeId: 0); init Hive CE in main.dart
-- [ ] 02-02-PLAN.md — Implement ScryfallQueryBuilder + FilterPresetRepository; replace providers.dart stub with FilterSettingsNotifier, activeFilterQuery, FilterPresetsNotifier
-- [ ] 02-03-PLAN.md — Implement FilterSettingsScreen — mana SVG toggles, type/rarity chips, date pickers, preset chip row (select+delete), preset save with duplicate validation
-- [ ] 02-04-PLAN.md — Add _ActiveFilterBar to CardSwipeScreen (DISC-10) — conditional chip row above card, chip X removes filter
+- [x] 02-00-PLAN.md — Wave 0: create test stubs (scryfall_query_builder_test, filter_settings_notifier_test, filter_presets_notifier_test, widget stubs, fake_preset fixture)
+- [x] 02-01-PLAN.md — Add flutter_svg to pubspec; create MtgColor enum, FilterSettings, FilterPreset + FilterPresetAdapter (typeId: 0); init Hive CE in main.dart
+- [x] 02-02-PLAN.md — Implement ScryfallQueryBuilder + FilterPresetRepository; replace providers.dart stub with FilterSettingsNotifier, activeFilterQuery, FilterPresetsNotifier
+- [x] 02-03-PLAN.md — Implement FilterSettingsScreen — mana SVG toggles, type/rarity chips, date pickers, preset chip row (select+delete), preset save with duplicate validation
+- [x] 02-04-PLAN.md — Add _ActiveFilterBar to CardSwipeScreen (DISC-10) — conditional chip row above card, chip X removes filter
 
 **UAT:**
-- [ ] Setting colour + type filter and returning to swipe screen fetches cards matching those filters
-- [ ] Empty filter → unrestricted random card (no `q` param)
-- [ ] Save preset → appears in preset list → selecting it restores filter state
-- [ ] Duplicate preset name blocked with inline error
-- [ ] Delete preset → removed from list
-- [ ] Active filter chips visible on swipe screen; tapping X removes that filter
-- [ ] `flutter analyze --fatal-infos` passes
+- [x] Setting colour + type filter and returning to swipe screen fetches cards matching those filters
+- [x] Empty filter → unrestricted random card (no `q` param)
+- [x] Save preset → appears in preset list → selecting it restores filter state
+- [x] Duplicate preset name blocked with inline error
+- [x] Delete preset → removed from list
+- [x] Active filter chips visible on swipe screen; tapping X removes that filter
+- [x] `flutter analyze --fatal-infos` passes
 
 ---
 
@@ -207,4 +207,4 @@ Key decisions from research that influenced this roadmap:
 
 ---
 *Roadmap created: 2026-04-10*
-*Last updated: 2026-04-12 — Phase 2 plans created (02-00 through 02-04)*
+*Last updated: 2026-04-16 — Phase 2 complete (verified)*

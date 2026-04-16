@@ -1,8 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:random_magic/features/card_discovery/presentation/card_swipe_screen.dart';
-import 'package:random_magic/features/filters/presentation/providers.dart';
 
 // Wave 0 stubs — all test bodies are skipped until Plan 05 implements the
 // ActiveFilterBar widget on the CardSwipeScreen (DISC-10).
