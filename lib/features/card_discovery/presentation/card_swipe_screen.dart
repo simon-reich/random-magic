@@ -97,6 +97,7 @@ class _CardSwipeScreenState extends ConsumerState<CardSwipeScreen> {
       releasedAt: '',
       imageUris: CardImageUris(),
       legalities: {}, // const required — {} alone is not a const expression
+      colors: [],
     );
     return Skeletonizer(
       enabled: true,
