@@ -110,12 +110,15 @@ Plans:
 - Favourites grid: 3-column `SliverGrid`, `artCrop` image URLs, ~2px gaps
 - Filtering within favourites: bottom sheet with colour/type/rarity chips; filter applied client-side to `_box.values`
 
-**Plans:**
-1. Implement `FavouriteCard` domain model + Hive adapter (typeId: 1); add box to `main.dart` initialization
-2. Implement `FavouritesNotifier` with `add` / `remove` / `isFavourite` methods
-3. Add swipe-up gesture and bookmark button to `CardSwipeScreen` → wires to `FavouritesNotifier`
-4. Implement `FavouritesScreen` — 3-column grid, empty state, filter bottom sheet
-5. Implement `FavouriteSwipeScreen` — full image swipe view, delete button
+**Plans:** 6 plans
+
+Plans:
+- [ ] 03-00-PLAN.md — Wave 0: create test stubs (fake_favourite_card fixture, favourites_notifier_test, favourites_filter_test, favourites_screen_test)
+- [ ] 03-01-PLAN.md — FavouriteCard domain model + FavouriteCardAdapter (typeId: 1); register in main.dart
+- [ ] 03-02-PLAN.md — FavouritesRepository, FavouritesNotifier, FavouritesFilterNotifier, filteredFavouritesProvider
+- [ ] 03-03-PLAN.md — Add bookmark overlay and swipe-up save to CardSwipeScreen (FAV-01)
+- [ ] 03-04-PLAN.md — Implement FavouritesScreen — 3-column grid, empty states, multi-select, filter bottom sheet
+- [ ] 03-05-PLAN.md — Implement FavouriteSwipeScreen — full image swipe view, delete + Undo Snackbar
 
 **UAT:**
 - [ ] Swiping up (or tapping bookmark) saves card; bookmark icon fills immediately
