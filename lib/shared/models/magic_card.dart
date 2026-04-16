@@ -14,6 +14,7 @@ class MagicCard {
     required this.releasedAt,
     required this.imageUris,
     required this.legalities,
+    required this.colors,
     this.manaCost,
     this.oracleText,
     // Intentionally nullable — hidden in UI when absent (not shown as blank).
@@ -51,6 +52,12 @@ class MagicCard {
   /// Map of format name → legality string (e.g. `"modern"` → `"legal"`).
   final Map<String, String> legalities;
 
+  /// Scryfall color identity for this card (e.g. `['R', 'G']` for Gruul).
+  ///
+  /// Empty list for colourless cards. Used by [FavouriteCard] for client-side
+  /// colour filtering in the Favourites feature (FAV-07).
+  final List<String> colors;
+
   /// Deserialises a Scryfall card JSON object into a [MagicCard].
   ///
   /// Handles the two main edge cases:
@@ -84,6 +91,8 @@ class MagicCard {
       prices: rawPrices != null ? CardPrices.fromJson(rawPrices) : null,
       // Defensive conversion — avoids Map<dynamic, dynamic> cast errors from Scryfall JSON.
       legalities: rawLegalities.map((k, v) => MapEntry(k.toString(), v.toString())),
+      // Scryfall omits 'colors' for colourless cards — default to empty list.
+      colors: (json['colors'] as List<dynamic>?)?.cast<String>() ?? const [],
     );
   }
 

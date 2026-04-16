@@ -97,6 +97,7 @@ class _CardSwipeScreenState extends ConsumerState<CardSwipeScreen> {
       releasedAt: '',
       imageUris: CardImageUris(),
       legalities: {}, // const required — {} alone is not a const expression
+      colors: [], // MagicCard.colors added in Plan 03-01 for FavouriteCard projection
     );
     return Skeletonizer(
       enabled: true,
