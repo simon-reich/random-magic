@@ -7,10 +7,12 @@ import 'package:random_magic/core/constants/spacing.dart';
 import 'package:random_magic/core/router/app_router.dart';
 import 'package:random_magic/core/theme/app_theme.dart';
 import 'package:random_magic/features/card_discovery/presentation/providers.dart';
+import 'package:random_magic/features/favourites/domain/favourite_card.dart';
 import 'package:random_magic/features/filters/domain/filter_settings.dart';
 import 'package:random_magic/features/filters/presentation/providers.dart';
 import 'package:random_magic/shared/failures.dart';
 import 'package:random_magic/shared/models/magic_card.dart';
+import 'package:random_magic/shared/providers/favourites_provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 /// The main card discovery screen.
@@ -117,7 +119,19 @@ class _CardSwipeScreenState extends ConsumerState<CardSwipeScreen> {
       numberOfCardsDisplayed: 1, // must not exceed cardsCount
       isDisabled: isLoading, // always false — swipe gating achieved by widget replacement in the loading: branch
       onSwipe: (previousIndex, currentIndex, direction) {
-        // Both left and right load the next random card (D-07).
+        if (direction == CardSwiperDirection.top) {
+          // D-02: swipe-up saves the card but does NOT advance to next card.
+          //
+          // VERIFIED against flutter_card_swiper 7.2.0 source:
+          // Returning false sets shouldCancelSwipe = true, which aborts the
+          // swipe animation — the card snaps back to its original position.
+          // This is the correct behaviour: save fires, card stays in place.
+          // Returning true would complete the animation; with cardsCount: 1 and
+          // isLoop: false that would call onEnd and leave the swiper empty.
+          _saveCardToFavourites(card);
+          return false;
+        }
+        // Left and right swipes load the next random card.
         ref.read(randomCardProvider.notifier).refresh();
         return true;
       },
@@ -129,6 +143,40 @@ class _CardSwipeScreenState extends ConsumerState<CardSwipeScreen> {
         );
       },
     );
+  }
+
+  /// Saves [card] to favourites. Called from swipe-up gesture (D-02).
+  ///
+  /// Guard: if already saved, silently returns (Pitfall 5).
+  // Intentional duplication — see _CardFaceWidget._saveToFavourites.
+  void _saveCardToFavourites(MagicCard card) {
+    final notifier = ref.read(favouritesProvider.notifier);
+    if (notifier.isFavourite(card.id)) return;
+    notifier.add(
+      FavouriteCard(
+        id: card.id,
+        name: card.name,
+        typeLine: card.typeLine,
+        rarity: card.rarity,
+        setCode: card.setCode,
+        artCropUrl: card.imageUris.artCrop,
+        normalImageUrl: card.imageUris.normal,
+        manaCost: card.manaCost,
+        savedAt: DateTime.now(),
+        // card.colors comes from MagicCard.colors parsed from json['colors'] in plan 03-01.
+        // Using card.colors (not const []) is required so colour filtering in Favourites
+        // returns correct results (FAV-07, D-12).
+        colors: card.colors,
+      ),
+    );
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(
+        const SnackBar(
+          duration: Duration(seconds: 2),
+          content: Text(_Strings.savedToFavourites),
+        ),
+      );
   }
 
   /// Builds the appropriate card-shaped error widget for [error].
@@ -179,11 +227,11 @@ class _CardSwipeScreenState extends ConsumerState<CardSwipeScreen> {
   }
 }
 
-/// Displays the full card face image and swipe overlay label.
+/// Displays the full card face image, swipe overlay label, and bookmark button.
 ///
-/// [swipePercentX] drives the overlay opacity — 0.0 when idle, approaching
-/// 1.0 as the card is dragged to threshold.
-class _CardFaceWidget extends StatelessWidget {
+/// [swipePercentX] drives the REVEAL overlay opacity.
+/// Watches [favouritesProvider] to render the correct bookmark icon state (D-04).
+class _CardFaceWidget extends ConsumerWidget {
   const _CardFaceWidget({required this.card, this.swipePercentX = 0.0});
 
   final MagicCard card;
@@ -192,7 +240,12 @@ class _CardFaceWidget extends StatelessWidget {
   final double swipePercentX;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Subscribe to list changes so the icon re-renders after add/remove.
+    ref.watch(favouritesProvider);
+    // isFav is derived synchronously — Hive box is in-memory after init (D-04).
+    final isFav = ref.read(favouritesProvider.notifier).isFavourite(card.id);
+
     // D-04: null image URL guard — use normal format; fall back to empty string
     // (CardImageUris.normal is nullable; double-faced fallback handled in fromJson).
     final imageUrl = card.imageUris.normal ?? '';
@@ -248,8 +301,60 @@ class _CardFaceWidget extends StatelessWidget {
               ),
             ),
           ),
+        // Bookmark button overlay (D-01, D-04) — bottom-right of card face.
+        // Tapping when unsaved: saves card + Snackbar. Tapping when saved: disabled.
+        Positioned(
+          bottom: AppSpacing.sm,
+          right: AppSpacing.sm,
+          child: IconButton(
+            tooltip: isFav ? _Strings.tooltipAlreadySaved : _Strings.tooltipSave,
+            icon: Icon(
+              isFav ? Icons.favorite : Icons.favorite_border,
+              color: isFav ? AppColors.error : AppColors.onBackground,
+            ),
+            // D-04: Tapping a filled (saved) icon does nothing.
+            onPressed: isFav ? null : () => _saveToFavourites(context, ref),
+          ),
+        ),
       ],
     );
+  }
+
+  /// Saves [card] to Favourites via [FavouritesNotifier] and shows a Snackbar.
+  ///
+  /// Guards against duplicate saves using [FavouritesNotifier.isFavourite] (Pitfall 5).
+  // Intentional duplication — see _CardSwipeScreenState._saveCardToFavourites.
+  void _saveToFavourites(BuildContext context, WidgetRef ref) {
+    final notifier = ref.read(favouritesProvider.notifier);
+    if (notifier.isFavourite(card.id)) return; // Already saved — silent no-op (Pitfall 5)
+
+    notifier.add(
+      FavouriteCard(
+        id: card.id,
+        name: card.name,
+        typeLine: card.typeLine,
+        rarity: card.rarity,
+        setCode: card.setCode,
+        artCropUrl: card.imageUris.artCrop,
+        normalImageUrl: card.imageUris.normal,
+        manaCost: card.manaCost,
+        savedAt: DateTime.now(),
+        // card.colors comes from MagicCard.colors parsed from json['colors'] in plan 03-01.
+        // Using card.colors (not const []) is required so colour filtering in Favourites
+        // returns correct results (FAV-07, D-12).
+        colors: card.colors,
+      ),
+    );
+
+    // Show save feedback Snackbar (D-03). Clear existing Snackbars first to avoid stacking.
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(
+        const SnackBar(
+          duration: Duration(seconds: 2),
+          content: Text(_Strings.savedToFavourites),
+        ),
+      );
   }
 }
 
@@ -393,6 +498,13 @@ class _ActiveFilterBar extends ConsumerWidget {
 
   String _formatDate(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+}
+
+/// String constants for [_CardFaceWidget] and [_CardSwipeScreenState].
+abstract final class _Strings {
+  static const String savedToFavourites = 'Saved to Favourites';
+  static const String tooltipSave = 'Save to Favourites';
+  static const String tooltipAlreadySaved = 'Already saved';
 }
 
 /// Card-shaped error placeholder widget.
