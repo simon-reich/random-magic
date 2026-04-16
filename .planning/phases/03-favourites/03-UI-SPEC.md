@@ -61,13 +61,12 @@ Exceptions:
 All type styles come from `AppTheme.dark.textTheme`. No `TextStyle` may be instantiated
 with hardcoded values unless it is a `copyWith` override on an existing theme style.
 
-| Role          | Theme Style          | Effective Size | Weight      | Color                    | Line Height | Usage                                              |
-|---------------|----------------------|---------------|-------------|--------------------------|-------------|-----------------------------------------------------|
-| Screen title  | `titleTextStyle`     | 20px          | w600        | `AppColors.onBackground` | 1.2 (tight) | AppBar "Favourites", "X selected" multi-select label|
-| Section header| `textTheme.titleMedium` | ~16px      | w500        | `AppColors.onBackground` | 1.3         | Bottom sheet section labels (Colour, Type, Rarity) |
-| Body          | `textTheme.bodyMedium`  | ~14px      | w400 (regular) | `AppColors.onBackground` | 1.5      | Snackbar messages, delete confirmation copy        |
-| Muted label   | `textTheme.bodySmall`   | ~12px      | w400 (regular) | `AppColors.onSurfaceMuted` | 1.4    | Card name in swipe view sub-labels, set code       |
-| Chip label    | `chipTheme.labelStyle`  | ~13px      | w400        | `AppColors.onBackground` | n/a         | Filter chips in bottom sheet                       |
+| Role          | Theme Style             | Effective Size | Weight         | Color                      | Line Height | Usage                                               |
+|---------------|-------------------------|----------------|----------------|----------------------------|-------------|------------------------------------------------------|
+| Screen title  | `titleTextStyle`        | 20px           | w600           | `AppColors.onBackground`   | 1.2 (tight) | AppBar "Favourites", "X selected" multi-select label |
+| Section header| `textTheme.titleMedium` | ~16px          | w500           | `AppColors.onBackground`   | 1.3         | Bottom sheet section labels (Colour, Type, Rarity)   |
+| Body          | `textTheme.bodyMedium`  | ~14px          | w400 (regular) | `AppColors.onBackground`   | 1.5         | Snackbar messages, delete confirmation copy          |
+| Muted label   | `textTheme.bodySmall`   | ~12px          | w400 (regular) | `AppColors.onSurfaceMuted` | 1.4         | Card name sub-labels, set code. Filter chip labels also inherit this style — no separate chip typography row. |
 
 Weights in use: regular (w400) and semibold (w600) only — consistent with existing theme.
 
@@ -125,6 +124,8 @@ Placed as a `Positioned` child inside the existing `Stack` in `_CardFaceWidget`
 ### 2. Favourites Grid — FavouritesScreen (FAV-02)
 
 `CustomScrollView` with `SliverAppBar` + `SliverGrid`.
+
+Primary focal point: the 3-column artCrop image grid, which occupies the full viewport and draws the eye first.
 
 | Property            | Value                                                               |
 |---------------------|---------------------------------------------------------------------|
