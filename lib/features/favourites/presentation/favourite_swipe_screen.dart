@@ -37,6 +37,11 @@ class _FavouriteSwipeScreenState extends ConsumerState<FavouriteSwipeScreen> {
   // inside a GoRouter StatefulShellRoute.
   Timer? _snackBarTimer;
 
+  // Incremented when CardSwiper must be rebuilt from scratch (e.g. after deleting
+  // the last card so the swiper seeks to the new last index via initialIndex).
+  // CardSwiper ignores initialIndex changes after creation; a new key forces it.
+  int _swiperKey = 0;
+
   @override
   void initState() {
     super.initState();
@@ -103,6 +108,7 @@ class _FavouriteSwipeScreenState extends ConsumerState<FavouriteSwipeScreen> {
             child: AspectRatio(
               aspectRatio: 63 / 88, // Standard MTG card ratio
               child: CardSwiper(
+                key: ValueKey(_swiperKey),
                 controller: _swiperController,
                 cardsCount: favourites.length,
                 numberOfCardsDisplayed: 1,
@@ -139,6 +145,18 @@ class _FavouriteSwipeScreenState extends ConsumerState<FavouriteSwipeScreen> {
     // Capture before removing — needed for undo closure.
     final deleted = card;
     ref.read(favouritesProvider.notifier).remove(deleted.id);
+
+    // If we just deleted the last card in the list, step _currentIndex back and
+    // force CardSwiper to rebuild via _swiperKey — CardSwiper ignores initialIndex
+    // changes after creation, so a key change is required to seek to the new index.
+    final remaining = ref.read(favouritesProvider).length;
+    if (remaining > 0 && _currentIndex >= remaining) {
+      setState(() {
+        _currentIndex = remaining - 1;
+        _swiperKey++;
+      });
+    }
+    // remaining == 0 is handled by the isEmpty guard in build().
 
     _snackBarTimer?.cancel();
     final messenger = ScaffoldMessenger.of(context)

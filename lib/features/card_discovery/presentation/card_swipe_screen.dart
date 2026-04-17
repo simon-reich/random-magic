@@ -76,17 +76,17 @@ class _CardSwipeScreenState extends ConsumerState<CardSwipeScreen> {
                 ),
               ),
             ),
-            // Bookmark button — bottom-left between card and nav bar (D-04).
+            // Bookmark button — bottom-right between card and nav bar (D-04).
             // Visible only when a card is loaded; placeholder keeps height stable.
             Padding(
               padding: const EdgeInsets.fromLTRB(
-                AppSpacing.sm,
-                0,
                 AppSpacing.md,
+                0,
+                AppSpacing.sm,
                 AppSpacing.sm,
               ),
               child: Align(
-                alignment: Alignment.centerLeft,
+                alignment: Alignment.centerRight,
                 child: cardState.maybeWhen(
                   data: (card) {
                     final isFav = ref
