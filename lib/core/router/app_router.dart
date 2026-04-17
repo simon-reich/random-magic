@@ -29,12 +29,6 @@ final appRouter = GoRouter(
         cardId: state.pathParameters['id']!,
       ),
     ),
-    GoRoute(
-      path: AppRoutes.favouriteSwipe,
-      builder: (context, state) => FavouriteSwipeScreen(
-        favouriteId: state.pathParameters['id']!,
-      ),
-    ),
     // Shell that hosts the three main tabs with a bottom navigation bar.
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) =>
@@ -53,6 +47,15 @@ final appRouter = GoRouter(
             GoRoute(
               path: AppRoutes.favourites,
               builder: (context, state) => const FavouritesScreen(),
+              routes: [
+                // Nested inside the favourites branch so the bottom nav bar stays visible.
+                GoRoute(
+                  path: ':id',
+                  builder: (context, state) => FavouriteSwipeScreen(
+                    favouriteId: state.pathParameters['id']!,
+                  ),
+                ),
+              ],
             ),
           ],
         ),

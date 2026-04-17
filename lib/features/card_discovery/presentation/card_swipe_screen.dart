@@ -47,6 +47,8 @@ class _CardSwipeScreenState extends ConsumerState<CardSwipeScreen> {
   Widget build(BuildContext context) {
     final cardState = ref.watch(randomCardProvider);
     final filterState = ref.watch(filterSettingsProvider);
+    // Subscribe so the bookmark icon re-renders when favourites change.
+    ref.watch(favouritesProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -61,7 +63,7 @@ class _CardSwipeScreenState extends ConsumerState<CardSwipeScreen> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.md,
-                    vertical: AppSpacing.lg,
+                    vertical: AppSpacing.sm,
                   ),
                   child: AspectRatio(
                     aspectRatio: 63 / 88, // Standard MTG card ratio (D-02)
@@ -71,6 +73,40 @@ class _CardSwipeScreenState extends ConsumerState<CardSwipeScreen> {
                       error: (error, _) => _buildErrorCard(error),
                     ),
                   ),
+                ),
+              ),
+            ),
+            // Bookmark button — bottom-left between card and nav bar (D-04).
+            // Visible only when a card is loaded; placeholder keeps height stable.
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.sm,
+                0,
+                AppSpacing.md,
+                AppSpacing.sm,
+              ),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: cardState.maybeWhen(
+                  data: (card) {
+                    final isFav = ref
+                        .read(favouritesProvider.notifier)
+                        .isFavourite(card.id);
+                    return IconButton(
+                      tooltip: isFav
+                          ? _Strings.tooltipAlreadySaved
+                          : _Strings.tooltipSave,
+                      icon: Icon(
+                        isFav ? Icons.favorite : Icons.favorite_border,
+                        color:
+                            isFav ? AppColors.error : AppColors.onBackground,
+                      ),
+                      onPressed:
+                          isFav ? null : () => _saveCardToFavourites(card),
+                    );
+                  },
+                  // Maintain consistent height while loading or on error.
+                  orElse: () => const SizedBox(width: 48, height: 48),
                 ),
               ),
             ),
@@ -145,10 +181,9 @@ class _CardSwipeScreenState extends ConsumerState<CardSwipeScreen> {
     );
   }
 
-  /// Saves [card] to favourites. Called from swipe-up gesture (D-02).
+  /// Saves [card] to favourites. Called from swipe-up gesture and bookmark button (D-02, D-04).
   ///
   /// Guard: if already saved, silently returns (Pitfall 5).
-  // Intentional duplication — see _CardFaceWidget._saveToFavourites.
   void _saveCardToFavourites(MagicCard card) {
     final notifier = ref.read(favouritesProvider.notifier);
     if (notifier.isFavourite(card.id)) return;
@@ -227,11 +262,12 @@ class _CardSwipeScreenState extends ConsumerState<CardSwipeScreen> {
   }
 }
 
-/// Displays the full card face image, swipe overlay label, and bookmark button.
+/// Displays the full card face image and swipe overlay label.
 ///
 /// [swipePercentX] drives the REVEAL overlay opacity.
-/// Watches [favouritesProvider] to render the correct bookmark icon state (D-04).
-class _CardFaceWidget extends ConsumerWidget {
+/// The bookmark button has moved outside the card face to the bottom-left
+/// of the screen (between card and nav bar) — see [_CardSwipeScreenState.build].
+class _CardFaceWidget extends StatelessWidget {
   const _CardFaceWidget({required this.card, this.swipePercentX = 0.0});
 
   final MagicCard card;
@@ -240,12 +276,7 @@ class _CardFaceWidget extends ConsumerWidget {
   final double swipePercentX;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Subscribe to list changes so the icon re-renders after add/remove.
-    ref.watch(favouritesProvider);
-    // isFav is derived synchronously — Hive box is in-memory after init (D-04).
-    final isFav = ref.read(favouritesProvider.notifier).isFavourite(card.id);
-
+  Widget build(BuildContext context) {
     // D-04: null image URL guard — use normal format; fall back to empty string
     // (CardImageUris.normal is nullable; double-faced fallback handled in fromJson).
     final imageUrl = card.imageUris.normal ?? '';
@@ -301,60 +332,8 @@ class _CardFaceWidget extends ConsumerWidget {
               ),
             ),
           ),
-        // Bookmark button overlay (D-01, D-04) — bottom-right of card face.
-        // Tapping when unsaved: saves card + Snackbar. Tapping when saved: disabled.
-        Positioned(
-          bottom: AppSpacing.sm,
-          right: AppSpacing.sm,
-          child: IconButton(
-            tooltip: isFav ? _Strings.tooltipAlreadySaved : _Strings.tooltipSave,
-            icon: Icon(
-              isFav ? Icons.favorite : Icons.favorite_border,
-              color: isFav ? AppColors.error : AppColors.onBackground,
-            ),
-            // D-04: Tapping a filled (saved) icon does nothing.
-            onPressed: isFav ? null : () => _saveToFavourites(context, ref),
-          ),
-        ),
       ],
     );
-  }
-
-  /// Saves [card] to Favourites via [FavouritesNotifier] and shows a Snackbar.
-  ///
-  /// Guards against duplicate saves using [FavouritesNotifier.isFavourite] (Pitfall 5).
-  // Intentional duplication — see _CardSwipeScreenState._saveCardToFavourites.
-  void _saveToFavourites(BuildContext context, WidgetRef ref) {
-    final notifier = ref.read(favouritesProvider.notifier);
-    if (notifier.isFavourite(card.id)) return; // Already saved — silent no-op (Pitfall 5)
-
-    notifier.add(
-      FavouriteCard(
-        id: card.id,
-        name: card.name,
-        typeLine: card.typeLine,
-        rarity: card.rarity,
-        setCode: card.setCode,
-        artCropUrl: card.imageUris.artCrop,
-        normalImageUrl: card.imageUris.normal,
-        manaCost: card.manaCost,
-        savedAt: DateTime.now(),
-        // card.colors comes from MagicCard.colors parsed from json['colors'] in plan 03-01.
-        // Using card.colors (not const []) is required so colour filtering in Favourites
-        // returns correct results (FAV-07, D-12).
-        colors: card.colors,
-      ),
-    );
-
-    // Show save feedback Snackbar (D-03). Clear existing Snackbars first to avoid stacking.
-    ScaffoldMessenger.of(context)
-      ..clearSnackBars()
-      ..showSnackBar(
-        const SnackBar(
-          duration: Duration(seconds: 2),
-          content: Text(_Strings.savedToFavourites),
-        ),
-      );
   }
 }
 

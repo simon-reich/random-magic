@@ -133,6 +133,8 @@ class _FavouriteSwipeScreenState extends ConsumerState<FavouriteSwipeScreen> {
       ..clearSnackBars()
       ..showSnackBar(
         SnackBar(
+          // Floating renders above the bottom nav bar and auto-dismisses reliably.
+          behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 3),
           content: Text(_Strings.deleteMessage(deleted.name)),
           action: SnackBarAction(
