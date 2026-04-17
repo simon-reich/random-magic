@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
@@ -30,6 +32,11 @@ class _FavouriteSwipeScreenState extends ConsumerState<FavouriteSwipeScreen> {
   // Track current displayed card index so the delete button knows which card to remove.
   late int _currentIndex;
 
+  // Explicit timer to dismiss the Undo Snackbar — belt-and-suspenders against the
+  // Flutter built-in duration mechanism not firing reliably with nested scaffolds
+  // inside a GoRouter StatefulShellRoute.
+  Timer? _snackBarTimer;
+
   @override
   void initState() {
     super.initState();
@@ -44,6 +51,7 @@ class _FavouriteSwipeScreenState extends ConsumerState<FavouriteSwipeScreen> {
 
   @override
   void dispose() {
+    _snackBarTimer?.cancel();
     _swiperController.dispose();
     super.dispose();
   }
@@ -129,23 +137,34 @@ class _FavouriteSwipeScreenState extends ConsumerState<FavouriteSwipeScreen> {
     final deleted = card;
     ref.read(favouritesProvider.notifier).remove(deleted.id);
 
-    ScaffoldMessenger.of(context)
+    _snackBarTimer?.cancel();
+    final messenger = ScaffoldMessenger.of(context)
       ..clearSnackBars()
       ..showSnackBar(
         SnackBar(
-          // Floating renders above the bottom nav bar and auto-dismisses reliably.
+          // Floating renders above the bottom nav bar.
           behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 3),
+          // duration is set for correctness; explicit timer below is the reliable path
+          // because Flutter's built-in dismissal doesn't fire reliably with nested
+          // scaffolds inside a GoRouter StatefulShellRoute.
+          duration: const Duration(days: 1),
           content: Text(_Strings.deleteMessage(deleted.name)),
           action: SnackBarAction(
             textColor: AppColors.primary,
             label: _Strings.undo,
             // Undo closure: re-inserts the deleted card. add() is idempotent by
             // card.id so double-undo within a single Snackbar lifecycle is safe (T-03-05-03).
-            onPressed: () => ref.read(favouritesProvider.notifier).add(deleted),
+            onPressed: () {
+              _snackBarTimer?.cancel();
+              ref.read(favouritesProvider.notifier).add(deleted);
+            },
           ),
         ),
       );
+    // Explicit 3-second dismissal timer — works around nested-scaffold timing issue.
+    _snackBarTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted) messenger.hideCurrentSnackBar();
+    });
   }
 }
 
