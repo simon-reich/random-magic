@@ -119,7 +119,7 @@ Plans:
 - [x] 03-03-PLAN.md — Add bookmark overlay and swipe-up save to CardSwipeScreen (FAV-01)
 - [x] 03-04-PLAN.md — Implement FavouritesScreen — 3-column grid, empty states, multi-select, filter bottom sheet
 - [x] 03-05-PLAN.md — Implement FavouriteSwipeScreen — full image swipe view, delete + Undo Snackbar
-- [ ] 03-06-PLAN.md — Gap closure: fill 12 skipped unit tests in favourites_notifier_test and favourites_filter_test
+- [x] 03-06-PLAN.md — Gap closure: fill 12 skipped unit tests in favourites_notifier_test and favourites_filter_test
 
 **UAT:**
 - [ ] Swiping up (or tapping bookmark) saves card; bookmark icon fills immediately
