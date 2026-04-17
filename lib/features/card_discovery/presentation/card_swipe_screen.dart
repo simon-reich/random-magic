@@ -76,23 +76,18 @@ class _CardSwipeScreenState extends ConsumerState<CardSwipeScreen> {
                 ),
               ),
             ),
-            // Bookmark button — bottom-right between card and nav bar (D-04).
+            // Bookmark button — centered below the card, between card and nav bar (D-04).
             // Visible only when a card is loaded; placeholder keeps height stable.
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.md,
-                0,
-                AppSpacing.sm,
-                AppSpacing.sm,
-              ),
-              child: Align(
-                alignment: Alignment.centerRight,
+            SizedBox(
+              height: 72,
+              child: Center(
                 child: cardState.maybeWhen(
                   data: (card) {
                     final isFav = ref
                         .read(favouritesProvider.notifier)
                         .isFavourite(card.id);
                     return IconButton(
+                      iconSize: 36,
                       tooltip: isFav
                           ? _Strings.tooltipAlreadySaved
                           : _Strings.tooltipSave,
@@ -106,7 +101,7 @@ class _CardSwipeScreenState extends ConsumerState<CardSwipeScreen> {
                     );
                   },
                   // Maintain consistent height while loading or on error.
-                  orElse: () => const SizedBox(width: 48, height: 48),
+                  orElse: () => const SizedBox(width: 52, height: 52),
                 ),
               ),
             ),
@@ -156,16 +151,12 @@ class _CardSwipeScreenState extends ConsumerState<CardSwipeScreen> {
       isDisabled: isLoading, // always false — swipe gating achieved by widget replacement in the loading: branch
       onSwipe: (previousIndex, currentIndex, direction) {
         if (direction == CardSwiperDirection.top) {
-          // D-02: swipe-up saves the card but does NOT advance to next card.
-          //
-          // VERIFIED against flutter_card_swiper 7.2.0 source:
-          // Returning false sets shouldCancelSwipe = true, which aborts the
-          // swipe animation — the card snaps back to its original position.
-          // This is the correct behaviour: save fires, card stays in place.
-          // Returning true would complete the animation; with cardsCount: 1 and
-          // isLoop: false that would call onEnd and leave the swiper empty.
+          // D-02: swipe-up saves the card and advances to the next card.
+          // Returning true completes the upward swipe animation; refresh()
+          // inside _saveCardToFavourites immediately triggers a new card fetch,
+          // replacing the CardSwiper with the loading skeleton before onEnd fires.
           _saveCardToFavourites(card);
-          return false;
+          return true;
         }
         // Left and right swipes load the next random card.
         ref.read(randomCardProvider.notifier).refresh();
@@ -212,6 +203,8 @@ class _CardSwipeScreenState extends ConsumerState<CardSwipeScreen> {
           content: Text(_Strings.savedToFavourites),
         ),
       );
+    // Load next random card after saving (D-02, D-04).
+    ref.read(randomCardProvider.notifier).refresh();
   }
 
   /// Builds the appropriate card-shaped error widget for [error].

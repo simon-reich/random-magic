@@ -178,6 +178,17 @@ class _FavouriteSwipeScreenState extends ConsumerState<FavouriteSwipeScreen> {
             onPressed: () {
               _snackBarTimer?.cancel();
               ref.read(favouritesProvider.notifier).add(deleted);
+              // Restore _currentIndex to the re-added card so the swiper
+              // jumps back to it (mirrors the original delete jump-back).
+              final restored = ref
+                  .read(favouritesProvider)
+                  .indexWhere((c) => c.id == deleted.id);
+              if (restored >= 0) {
+                setState(() {
+                  _currentIndex = restored;
+                  _swiperKey++;
+                });
+              }
             },
           ),
         ),
