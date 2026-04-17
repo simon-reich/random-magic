@@ -110,15 +110,16 @@ Plans:
 - Favourites grid: 3-column `SliverGrid`, `artCrop` image URLs, ~2px gaps
 - Filtering within favourites: bottom sheet with colour/type/rarity chips; filter applied client-side to `_box.values`
 
-**Plans:** 6 plans
+**Plans:** 7 plans
 
 Plans:
-- [ ] 03-00-PLAN.md — Wave 0: create test stubs (fake_favourite_card fixture, favourites_notifier_test, favourites_filter_test, favourites_screen_test)
-- [ ] 03-01-PLAN.md — FavouriteCard domain model + FavouriteCardAdapter (typeId: 1); register in main.dart
-- [ ] 03-02-PLAN.md — FavouritesRepository, FavouritesNotifier, FavouritesFilterNotifier, filteredFavouritesProvider
-- [ ] 03-03-PLAN.md — Add bookmark overlay and swipe-up save to CardSwipeScreen (FAV-01)
-- [ ] 03-04-PLAN.md — Implement FavouritesScreen — 3-column grid, empty states, multi-select, filter bottom sheet
-- [ ] 03-05-PLAN.md — Implement FavouriteSwipeScreen — full image swipe view, delete + Undo Snackbar
+- [x] 03-00-PLAN.md — Wave 0: create test stubs (fake_favourite_card fixture, favourites_notifier_test, favourites_filter_test, favourites_screen_test)
+- [x] 03-01-PLAN.md — FavouriteCard domain model + FavouriteCardAdapter (typeId: 1); register in main.dart
+- [x] 03-02-PLAN.md — FavouritesRepository, FavouritesNotifier, FavouritesFilterNotifier, filteredFavouritesProvider
+- [x] 03-03-PLAN.md — Add bookmark overlay and swipe-up save to CardSwipeScreen (FAV-01)
+- [x] 03-04-PLAN.md — Implement FavouritesScreen — 3-column grid, empty states, multi-select, filter bottom sheet
+- [x] 03-05-PLAN.md — Implement FavouriteSwipeScreen — full image swipe view, delete + Undo Snackbar
+- [ ] 03-06-PLAN.md — Gap closure: fill 12 skipped unit tests in favourites_notifier_test and favourites_filter_test
 
 **UAT:**
 - [ ] Swiping up (or tapping bookmark) saves card; bookmark icon fills immediately
@@ -210,4 +211,4 @@ Key decisions from research that influenced this roadmap:
 
 ---
 *Roadmap created: 2026-04-10*
-*Last updated: 2026-04-16 — Phase 2 complete (verified)*
+*Last updated: 2026-04-17 — Phase 3 gap closure plan (03-06) added*
