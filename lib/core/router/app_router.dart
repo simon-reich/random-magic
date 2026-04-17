@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:random_magic/features/card_detail/presentation/card_detail_screen.dart';
+import 'package:random_magic/shared/models/magic_card.dart';
 import 'package:random_magic/features/card_discovery/presentation/card_swipe_screen.dart';
 import 'package:random_magic/features/favourites/presentation/favourite_swipe_screen.dart';
 import 'package:random_magic/features/favourites/presentation/favourites_screen.dart';
@@ -25,9 +26,12 @@ final appRouter = GoRouter(
     // Full-screen routes that sit above the shell (no bottom nav bar).
     GoRoute(
       path: AppRoutes.cardDetail,
-      builder: (context, state) => CardDetailScreen(
-        cardId: state.pathParameters['id']!,
-      ),
+      builder: (context, state) {
+        // Guard: extra may be null if the route is restored after an OS kill.
+        // In that case, CardDetailScreen shows its own error widget.
+        final card = state.extra is MagicCard ? state.extra as MagicCard : null;
+        return CardDetailScreen(card: card);
+      },
     ),
     // Shell that hosts the three main tabs with a bottom navigation bar.
     StatefulShellRoute.indexedStack(

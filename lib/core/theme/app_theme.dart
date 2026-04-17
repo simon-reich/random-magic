@@ -35,6 +35,10 @@ abstract final class AppColors {
 
   /// Blue-grey accent used for network-unreachable and rate-limit error states.
   static const Color networkError = Color(0xFF607D8B);
+
+  /// Green — used for "Legal" legality badge in CardDetailScreen.
+  /// Required by CLAUDE.md §No magic numbers — must not be hardcoded inline.
+  static const Color legal = Color(0xFF4CAF50);
 }
 
 /// Provides the [ThemeData] for the Random Magic app.

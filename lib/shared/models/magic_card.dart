@@ -1,3 +1,45 @@
+/// A single face of a double-faced Magic: The Gathering card.
+///
+/// Only populated when [MagicCard.cardFaces] is non-null (i.e. the card is a
+/// double-faced card). Single-faced cards have [MagicCard.cardFaces] == null.
+class CardFace {
+  const CardFace({
+    required this.imageUris,
+    required this.name,
+    required this.typeLine,
+    this.oracleText,
+    this.manaCost,
+  });
+
+  /// Image URLs for this face. May contain only a subset of sizes.
+  final CardImageUris imageUris;
+
+  /// Name of this face (e.g. 'Delver of Secrets').
+  final String name;
+
+  /// Full type line for this face.
+  final String typeLine;
+
+  /// Rules text for this face. Null on faces with no text box.
+  final String? oracleText;
+
+  /// Mana cost for this face. Null on back faces that have no casting cost.
+  final String? manaCost;
+
+  /// Deserialises a single entry from Scryfall's `card_faces` array.
+  factory CardFace.fromJson(Map<String, dynamic> json) {
+    return CardFace(
+      imageUris: CardImageUris.fromJson(
+        (json['image_uris'] as Map<String, dynamic>?) ?? {},
+      ),
+      name: json['name'] as String,
+      typeLine: json['type_line'] as String,
+      oracleText: json['oracle_text'] as String?,
+      manaCost: json['mana_cost'] as String?,
+    );
+  }
+}
+
 /// Represents a single Magic: The Gathering card as returned by the Scryfall API.
 ///
 /// All fields are immutable. Use [MagicCard.fromJson] to deserialise a
@@ -20,6 +62,7 @@ class MagicCard {
     // Intentionally nullable — hidden in UI when absent (not shown as blank).
     this.flavorText,
     this.prices,
+    this.cardFaces,
   });
 
   final String id;
@@ -49,6 +92,13 @@ class MagicCard {
   /// Current market prices. All sub-fields are nullable — UI shows "N/A" when null.
   final CardPrices? prices;
 
+  /// Per-face data for double-faced cards. Null for single-faced cards.
+  ///
+  /// When non-null, contains exactly 2 entries: index 0 = front face,
+  /// index 1 = back face. Use [CardFace.imageUris], [CardFace.name],
+  /// [CardFace.typeLine], and [CardFace.oracleText] for face-specific display.
+  final List<CardFace>? cardFaces;
+
   /// Map of format name → legality string (e.g. `"modern"` → `"legal"`).
   final Map<String, String> legalities;
 
@@ -75,6 +125,17 @@ class MagicCard {
 
     final rawLegalities = json['legalities'] as Map<String, dynamic>? ?? {};
 
+    // Parse double-faced card faces. Requires >= 2 entries to be meaningful.
+    // Does NOT conflict with _firstFaceImageUris — both read json['card_faces']
+    // as a read-only key lookup; the JSON map is immutable.
+    final rawFaces = json['card_faces'] as List<dynamic>?;
+    final cardFaces = rawFaces != null && rawFaces.length >= 2
+        ? rawFaces
+            .cast<Map<String, dynamic>>()
+            .map(CardFace.fromJson)
+            .toList()
+        : null;
+
     return MagicCard(
       id: json['id'] as String,
       name: json['name'] as String,
@@ -93,6 +154,7 @@ class MagicCard {
       legalities: rawLegalities.map((k, v) => MapEntry(k.toString(), v.toString())),
       // Scryfall omits 'colors' for colourless cards — default to empty list.
       colors: (json['colors'] as List<dynamic>?)?.cast<String>() ?? const [],
+      cardFaces: cardFaces,
     );
   }
 
