@@ -120,6 +120,9 @@ class _FavouriteSwipeScreenState extends ConsumerState<FavouriteSwipeScreen> {
                   return true;
                 },
                 cardBuilder: (context, index, percentX, percentY) {
+                  // Guard: CardSwiper may call the builder with a stale index
+                  // in the frame between a delete and the widget's cardsCount update.
+                  if (index >= favourites.length) return const SizedBox.shrink();
                   final card = favourites[index];
                   return _FavouriteCardFace(card: card);
                 },
