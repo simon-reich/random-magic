@@ -39,6 +39,25 @@ class ScryfallApiClient {
     }
   }
 
+  /// Fetches a single card by its Scryfall UUID.
+  ///
+  /// Calls `GET /cards/:id`. Used by [FavouriteSwipeScreen] to resolve
+  /// a full [MagicCard] from a [FavouriteCard] before navigating to detail.
+  ///
+  /// Returns:
+  /// - [Success<MagicCard>] on HTTP 200 with a parseable response.
+  /// - [Failure<CardNotFoundFailure>] on HTTP 404.
+  /// - [Failure<NetworkFailure>] on timeout or no network connection.
+  Future<Result<MagicCard>> getCardById(String id) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>('/cards/$id');
+      final card = MagicCard.fromJson(response.data!);
+      return Success(card);
+    } on DioException catch (e) {
+      return Failure(_mapDioException(e));
+    }
+  }
+
   /// Builds the query parameter map for the `/cards/random` endpoint.
   ///
   /// Omits the `q` parameter entirely when [query] is null or blank so

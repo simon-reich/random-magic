@@ -15,4 +15,9 @@ class CardRepositoryImpl implements CardRepository {
   Future<Result<MagicCard>> getRandomCard({String? query}) {
     return _client.getRandomCard(query: query);
   }
+
+  @override
+  Future<Result<MagicCard>> getCardById(String id) {
+    return _client.getCardById(id);
+  }
 }
