@@ -7,8 +7,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:random_magic/core/constants/spacing.dart';
 import 'package:random_magic/core/theme/app_theme.dart';
+import 'package:random_magic/features/card_discovery/presentation/providers.dart'
+    show cardRepositoryProvider;
 import 'package:random_magic/features/favourites/domain/favourite_card.dart';
 import 'package:random_magic/features/favourites/presentation/providers.dart';
+import 'package:random_magic/shared/result.dart';
 
 /// Swipe-through view for saved favourites.
 ///
@@ -130,7 +133,38 @@ class _FavouriteSwipeScreenState extends ConsumerState<FavouriteSwipeScreen> {
                   // in the frame between a delete and the widget's cardsCount update.
                   if (index >= favourites.length) return const SizedBox.shrink();
                   final card = favourites[index];
-                  return _FavouriteCardFace(card: card);
+                  // CARD-01 / Pitfall 6 resolution: FavouriteCard lacks the full
+                  // metadata CardDetailScreen requires (legalities, prices, etc.).
+                  // Fetch the full MagicCard via getCardById before navigating so
+                  // CardDetailScreen receives all data without re-fetching itself.
+                  // Goes through repository — no direct API call from presentation.
+                  return GestureDetector(
+                    onTap: () async {
+                      final result = await ref
+                          .read(cardRepositoryProvider)
+                          .getCardById(card.id);
+                      switch (result) {
+                        case Success(:final value):
+                          // context.mounted guard required after the await boundary.
+                          if (context.mounted) {
+                            context.go('/card/${value.id}', extra: value);
+                          }
+                        case Failure():
+                          // Show generic snackbar on failure — no API detail exposed
+                          // (T-04-11: information disclosure accept).
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Could not load card details. Try again.',
+                                ),
+                              ),
+                            );
+                          }
+                      }
+                    },
+                    child: _FavouriteCardFace(card: card),
+                  );
                 },
               ),
             ),
