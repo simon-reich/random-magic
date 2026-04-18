@@ -10,30 +10,35 @@ import 'package:random_magic/features/filters/presentation/filter_settings_scree
 /// Named route constants — use these instead of raw path strings.
 abstract final class AppRoutes {
   static const discovery = '/';
-  static const cardDetail = '/card/:id';
+  /// Card detail reached from the Discover tab — nested so bottom nav stays visible.
+  static const cardDetailFromDiscovery = '/card/:id';
+  /// Card detail reached from the Favourites tab — nested so bottom nav stays visible.
+  static const cardDetailFromFavourites = '/favourites/card/:id';
   static const filters = '/filters';
   static const favourites = '/favourites';
   static const favouriteSwipe = '/favourites/:id';
 }
 
+GoRoute _cardDetailRoute(String path) => GoRoute(
+      path: path,
+      builder: (context, state) {
+        // Guard: extra may be null if the route is restored after an OS kill.
+        final card = state.extra is MagicCard ? state.extra as MagicCard : null;
+        return CardDetailScreen(card: card);
+      },
+    );
+
 /// The [GoRouter] instance for the app.
 ///
 /// Uses a [StatefulShellRoute] so each bottom-nav tab maintains its own
 /// navigation stack and scroll position across tab switches.
+///
+/// Card detail is nested inside each branch rather than sitting above the shell,
+/// so the bottom navigation bar stays visible and re-tapping the active tab
+/// resets the branch to its root (acting as an additional back gesture).
 final appRouter = GoRouter(
   initialLocation: AppRoutes.discovery,
   routes: [
-    // Full-screen routes that sit above the shell (no bottom nav bar).
-    GoRoute(
-      path: AppRoutes.cardDetail,
-      builder: (context, state) {
-        // Guard: extra may be null if the route is restored after an OS kill.
-        // In that case, CardDetailScreen shows its own error widget.
-        final card = state.extra is MagicCard ? state.extra as MagicCard : null;
-        return CardDetailScreen(card: card);
-      },
-    ),
-    // Shell that hosts the three main tabs with a bottom navigation bar.
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) =>
           _ShellScaffold(navigationShell: navigationShell),
@@ -43,6 +48,10 @@ final appRouter = GoRouter(
             GoRoute(
               path: AppRoutes.discovery,
               builder: (context, state) => const CardSwipeScreen(),
+              routes: [
+                // 'card/:id' resolves to '/card/:id' — nested under Discover branch.
+                _cardDetailRoute('card/:id'),
+              ],
             ),
           ],
         ),
@@ -52,7 +61,9 @@ final appRouter = GoRouter(
               path: AppRoutes.favourites,
               builder: (context, state) => const FavouritesScreen(),
               routes: [
-                // Nested inside the favourites branch so the bottom nav bar stays visible.
+                // 'card/:id' defined before ':id' so the literal segment wins
+                // over the wildcard when the path starts with 'card/'.
+                _cardDetailRoute('card/:id'),
                 GoRoute(
                   path: ':id',
                   builder: (context, state) => FavouriteSwipeScreen(
@@ -90,7 +101,8 @@ class _ShellScaffold extends StatelessWidget {
         selectedIndex: navigationShell.currentIndex,
         onDestinationSelected: (index) => navigationShell.goBranch(
           index,
-          // Return to the initial route of a branch when re-tapping its tab.
+          // Re-tapping the active tab resets it to its initial route.
+          // When on card detail, this acts as a second back path.
           initialLocation: index == navigationShell.currentIndex,
         ),
         destinations: const [
