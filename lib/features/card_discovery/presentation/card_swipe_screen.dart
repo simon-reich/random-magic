@@ -164,9 +164,16 @@ class _CardSwipeScreenState extends ConsumerState<CardSwipeScreen> {
       },
       cardBuilder: (context, index, percentThresholdX, percentThresholdY) {
         // flutter_card_swiper provides int percentage values (0–100); normalize to 0.0–1.0.
-        return _CardFaceWidget(
-          card: card,
-          swipePercentX: percentThresholdX / 100.0,
+        // D-02: GestureDetector wraps the card face so a tap opens CardDetailScreen.
+        // onTap is additive to CardSwiper's pan/swipe handling — short taps (below
+        // CardSwiper's pan threshold) are delivered to onTap; swipe gestures are
+        // consumed by the parent CardSwiper instead.
+        return GestureDetector(
+          onTap: () => context.go('/card/${card.id}', extra: card),
+          child: _CardFaceWidget(
+            card: card,
+            swipePercentX: percentThresholdX / 100.0,
+          ),
         );
       },
     );
