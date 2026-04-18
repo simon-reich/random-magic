@@ -9,6 +9,7 @@ class CardFace {
     required this.typeLine,
     this.oracleText,
     this.manaCost,
+    this.artist,
   });
 
   /// Image URLs for this face. May contain only a subset of sizes.
@@ -26,6 +27,9 @@ class CardFace {
   /// Mana cost for this face. Null on back faces that have no casting cost.
   final String? manaCost;
 
+  /// Artist credit for this face. Null when absent (some tokens/emblems).
+  final String? artist;
+
   /// Deserialises a single entry from Scryfall's `card_faces` array.
   factory CardFace.fromJson(Map<String, dynamic> json) {
     return CardFace(
@@ -33,9 +37,11 @@ class CardFace {
         (json['image_uris'] as Map<String, dynamic>?) ?? {},
       ),
       name: json['name'] as String,
-      typeLine: json['type_line'] as String,
+      // token cards may omit type_line — fall back to empty string (CR-01)
+      typeLine: (json['type_line'] as String?) ?? '',
       oracleText: json['oracle_text'] as String?,
       manaCost: json['mana_cost'] as String?,
+      artist: json['artist'] as String?,
     );
   }
 }
@@ -63,6 +69,7 @@ class MagicCard {
     this.flavorText,
     this.prices,
     this.cardFaces,
+    this.artist,
   });
 
   final String id;
@@ -91,6 +98,9 @@ class MagicCard {
 
   /// Current market prices. All sub-fields are nullable — UI shows "N/A" when null.
   final CardPrices? prices;
+
+  /// Artist credit. Null when absent (some tokens/emblems).
+  final String? artist;
 
   /// Per-face data for double-faced cards. Null for single-faced cards.
   ///
@@ -140,7 +150,8 @@ class MagicCard {
       id: json['id'] as String,
       name: json['name'] as String,
       manaCost: json['mana_cost'] as String?,
-      typeLine: json['type_line'] as String,
+      // token cards may omit type_line — fall back to empty string (CR-01)
+      typeLine: (json['type_line'] as String?) ?? '',
       oracleText: json['oracle_text'] as String?,
       flavorText: json['flavor_text'] as String?,
       rarity: json['rarity'] as String,
@@ -155,6 +166,7 @@ class MagicCard {
       // Scryfall omits 'colors' for colourless cards — default to empty list.
       colors: (json['colors'] as List<dynamic>?)?.cast<String>() ?? const [],
       cardFaces: cardFaces,
+      artist: json['artist'] as String?,
     );
   }
 

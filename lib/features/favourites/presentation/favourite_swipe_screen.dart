@@ -147,7 +147,7 @@ class _FavouriteSwipeScreenState extends ConsumerState<FavouriteSwipeScreen> {
                         case Success(:final value):
                           // context.mounted guard required after the await boundary.
                           if (context.mounted) {
-                            context.go('/card/${value.id}', extra: value);
+                            context.push('/card/${value.id}', extra: value);
                           }
                         case Failure():
                           // Show generic snackbar on failure — no API detail exposed

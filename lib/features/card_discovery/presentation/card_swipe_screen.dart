@@ -169,7 +169,7 @@ class _CardSwipeScreenState extends ConsumerState<CardSwipeScreen> {
         // CardSwiper's pan threshold) are delivered to onTap; swipe gestures are
         // consumed by the parent CardSwiper instead.
         return GestureDetector(
-          onTap: () => context.go('/card/${card.id}', extra: card),
+          onTap: () => context.push('/card/${card.id}', extra: card),
           child: _CardFaceWidget(
             card: card,
             swipePercentX: percentThresholdX / 100.0,

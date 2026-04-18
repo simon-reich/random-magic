@@ -4,11 +4,27 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:random_magic/core/constants/spacing.dart';
 import 'package:random_magic/core/theme/app_theme.dart';
+import 'package:random_magic/features/favourites/domain/favourite_card.dart';
+import 'package:random_magic/features/favourites/presentation/providers.dart'
+    show favouritesProvider;
 import 'package:random_magic/shared/models/magic_card.dart';
 
 /// Layout constant — height of the expanded SliverAppBar artwork area.
 /// Derived from standard MTG card ratio (63:88) at ~315px width ≈ 440px height.
 const double _kDetailArtworkHeight = 440.0;
+
+/// Formats a Scryfall ISO date string (e.g. "2009-07-17") as "July 2009".
+String _formatReleaseDate(String iso) {
+  final parts = iso.split('-');
+  if (parts.length < 2) return iso;
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
+  ];
+  final month = int.tryParse(parts[1]);
+  if (month == null || month < 1 || month > 12) return iso;
+  return '${months[month - 1]} ${parts[0]}';
+}
 
 /// Full-screen detail view for a single Magic: The Gathering card.
 ///
@@ -42,22 +58,23 @@ class _CardDetailScreenState extends ConsumerState<CardDetailScreen> {
     }
 
     // Derive display values from active face (D-04).
-    // When _showBack is true and cardFaces has a back face, use face[1] values.
     final backFace = (_showBack && (card.cardFaces?.length ?? 0) >= 2)
         ? card.cardFaces![1]
         : null;
 
     final displayName = backFace?.name ?? card.name;
     final displayTypeLine = backFace?.typeLine ?? card.typeLine;
-    final displayOracleText = backFace?.oracleText ?? card.oracleText;
+    final displayArtist = backFace?.artist ?? card.artist;
 
     // D-06: large format for detail screen; fall back to normal.
     final displayImageUrl = backFace != null
         ? (backFace.imageUris.large ?? backFace.imageUris.normal ?? '')
         : (card.imageUris.large ?? card.imageUris.normal ?? '');
 
-    // D-04: mana cost always shows front-face value (back faces often lack mana cost).
-    final displayManaCost = card.manaCost ?? card.cardFaces?[0].manaCost;
+    // Reactive favourite state — rebuilds when favourites change.
+    final isFav = ref.watch(
+      favouritesProvider.select((cards) => cards.any((c) => c.id == card.id)),
+    );
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -73,63 +90,77 @@ class _CardDetailScreenState extends ConsumerState<CardDetailScreen> {
           : null,
       body: CustomScrollView(
         slivers: [
-          // D-05: SliverAppBar with expandedHeight; collapses to standard AppBar on scroll.
           SliverAppBar(
             expandedHeight: _kDetailArtworkHeight,
             pinned: true,
             stretch: false,
             backgroundColor: AppColors.background,
             foregroundColor: AppColors.onBackground,
+            // Explicit back button — works for both button tap and Android system back.
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => context.pop(),
+            ),
+            actions: [
+              IconButton(
+                icon: Icon(isFav ? Icons.favorite : Icons.favorite_border),
+                color: isFav ? AppColors.error : AppColors.onBackground,
+                tooltip: isFav ? 'Remove from favourites' : 'Add to favourites',
+                onPressed: () {
+                  final notifier =
+                      ref.read(favouritesProvider.notifier);
+                  if (isFav) {
+                    notifier.remove(card.id);
+                  } else {
+                    notifier.add(FavouriteCard(
+                      id: card.id,
+                      name: card.name,
+                      typeLine: card.typeLine,
+                      rarity: card.rarity,
+                      setCode: card.setCode,
+                      savedAt: DateTime.now(),
+                      colors: card.colors,
+                      artCropUrl: card.imageUris.artCrop,
+                      normalImageUrl: card.imageUris.normal,
+                      manaCost: card.manaCost,
+                    ));
+                  }
+                },
+              ),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               collapseMode: CollapseMode.parallax,
-              // Title visible in both expanded and collapsed state;
-              // FlexibleSpaceBar handles opacity transition automatically.
-              title: Text(
-                displayName,
-                style: const TextStyle(
-                  color: AppColors.onBackground,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
+              // No title — card name appears below the artwork, not overlaid on it.
               background: _CardArtwork(imageUrl: displayImageUrl),
             ),
           ),
-          // Content sections below the artwork (D-07: section order locked).
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 const SizedBox(height: AppSpacing.lg),
-                // Mana cost + type line header
-                if (displayManaCost != null)
-                  Text(
-                    displayManaCost,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: AppColors.primary,
-                        ),
-                  ),
-                if (displayManaCost != null) const SizedBox(height: AppSpacing.xs),
+                // Card name below artwork
+                Text(
+                  displayName,
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: AppSpacing.xs),
                 Text(
                   displayTypeLine,
-                  style: Theme.of(context).textTheme.titleMedium,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: AppColors.onSurfaceMuted,
+                      ),
                 ),
                 const SizedBox(height: AppSpacing.md),
-                // Oracle text (CARD-02)
-                if (displayOracleText != null)
-                  _OracleTextSection(oracleText: displayOracleText),
                 // Flavour text — hidden entirely when null (CARD-02, D-07)
                 if (card.flavorText != null)
                   _FlavorTextSection(flavorText: card.flavorText!),
-                // Divider between text sections and info sections
                 const Divider(
                   color: AppColors.surfaceContainer,
                   height: AppSpacing.xl,
                 ),
                 // Set info section (CARD-02)
-                _SetInfoSection(card: card),
+                _SetInfoSection(card: card, artist: displayArtist),
                 const Divider(
                   color: AppColors.surfaceContainer,
                   height: AppSpacing.xl,
@@ -155,7 +186,13 @@ class _CardDetailScreenState extends ConsumerState<CardDetailScreen> {
   Widget _buildErrorScaffold(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(backgroundColor: AppColors.background),
+      appBar: AppBar(
+        backgroundColor: AppColors.background,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
+        ),
+      ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.md),
@@ -200,7 +237,6 @@ class _CardArtwork extends StatelessWidget {
         : CachedNetworkImage(
             imageUrl: imageUrl,
             fit: BoxFit.cover,
-            // Null placeholder: CachedNetworkImage shows a colored box via placeholder
             placeholder: (context, url) =>
                 const ColoredBox(color: AppColors.surface),
             errorWidget: (context, url, error) => const Center(
@@ -214,27 +250,9 @@ class _CardArtwork extends StatelessWidget {
   }
 }
 
-/// Oracle text section — rules text for the card or active face.
-///
-/// No section heading; oracle text is displayed directly as body text.
-class _OracleTextSection extends StatelessWidget {
-  const _OracleTextSection({required this.oracleText});
-
-  final String oracleText;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      oracleText,
-      style: Theme.of(context).textTheme.bodyMedium,
-    );
-  }
-}
-
 /// Flavour text section — italic body text.
 ///
 /// Only rendered when [flavorText] is non-null (CARD-02, D-07).
-/// No section heading.
 class _FlavorTextSection extends StatelessWidget {
   const _FlavorTextSection({required this.flavorText});
 
@@ -243,7 +261,7 @@ class _FlavorTextSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.md),
+      padding: const EdgeInsets.only(top: AppSpacing.sm, bottom: AppSpacing.md),
       child: Text(
         flavorText,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -255,11 +273,12 @@ class _FlavorTextSection extends StatelessWidget {
   }
 }
 
-/// Set info section — set name, collector number, and release date (CARD-02).
+/// Set info section — set name, collector number, release date, and artist (CARD-02).
 class _SetInfoSection extends StatelessWidget {
-  const _SetInfoSection({required this.card});
+  const _SetInfoSection({required this.card, required this.artist});
 
   final MagicCard card;
+  final String? artist;
 
   @override
   Widget build(BuildContext context) {
@@ -273,7 +292,8 @@ class _SetInfoSection extends StatelessWidget {
         const SizedBox(height: AppSpacing.sm),
         _InfoRow(label: 'Set', value: card.setName),
         _InfoRow(label: 'Number', value: card.collectorNumber),
-        _InfoRow(label: 'Released', value: card.releasedAt),
+        _InfoRow(label: 'Released', value: _formatReleaseDate(card.releasedAt)),
+        if (artist != null) _InfoRow(label: 'Artist', value: artist!),
       ],
     );
   }
@@ -386,12 +406,10 @@ class _LegalitiesSection extends StatelessWidget {
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: AppSpacing.sm),
-        // Required formats (CARD-04, D-08)
         _LegalityRow(format: 'Standard', status: legalities['standard']),
         _LegalityRow(format: 'Modern', status: legalities['modern']),
         _LegalityRow(format: 'Legacy', status: legalities['legacy']),
         _LegalityRow(format: 'Commander', status: legalities['commander']),
-        // Additional formats at Claude's discretion (CONTEXT.md §Claude's Discretion)
         _LegalityRow(format: 'Pioneer', status: legalities['pioneer']),
         _LegalityRow(format: 'Vintage', status: legalities['vintage']),
         _LegalityRow(format: 'Pauper', status: legalities['pauper']),
@@ -415,12 +433,11 @@ class _LegalityRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Derive badge color from Scryfall legality string (lowercase keys — Pitfall 5).
     final badgeColor = switch (status) {
       'legal'      => AppColors.legal,
       'banned'     => AppColors.error,
       'restricted' => AppColors.primaryVariant,
-      _            => AppColors.onSurfaceMuted, // 'not_legal', null
+      _            => AppColors.onSurfaceMuted,
     };
 
     final badgeLabel = switch (status) {
@@ -442,7 +459,6 @@ class _LegalityRow extends StatelessWidget {
               vertical: AppSpacing.xs,
             ),
             decoration: BoxDecoration(
-              // 15% opacity fill with solid border — D-08 badge visual.
               color: badgeColor.withValues(alpha: 0.15),
               border: Border.all(color: badgeColor),
               borderRadius: BorderRadius.circular(AppSpacing.xs),
