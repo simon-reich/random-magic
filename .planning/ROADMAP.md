@@ -181,12 +181,12 @@ Plans:
 - GoRouter-dependent screens: wrap in minimal `MaterialApp.router` with a test router
 - Fixtures in `test/fixtures/`: `fake_card.dart`, `fake_double_faced_card.dart`, `fake_preset.dart`
 
-**Plans:**
-1. Create test fixtures; write unit tests for `ScryfallQueryBuilder` and `MagicCard.fromJson()`
-2. Write unit tests for `RandomCardNotifier`, `FilterPresetsNotifier`, `FavouritesNotifier`
-3. Write widget tests for `CardSwipeScreen` (loading / success / all 3 error states)
-4. Write widget tests for `FilterSettingsScreen` and `FavouritesScreen`
-5. Write integration test: swipe → new card → save → favourites grid → delete
+**Plans:** 3 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — Add integration_test to pubspec; create FakeCardRepository fixture; write MagicCard.fromJson() unit tests (TEST-02) + RandomCardNotifier unit tests
+- [ ] 05-02-PLAN.md — Write CardSwipeScreen widget tests — all 5 states (TEST-03); replace FilterSettingsScreen stubs (TEST-04); replace ActiveFilterBar stubs (DISC-10)
+- [ ] 05-03-PLAN.md — Write integration test: swipe → save → Favourites grid (TEST-06); run full suite + coverage gate (QA-01, QA-02, QA-03)
 
 **UAT:**
 - [ ] `flutter test` passes with zero failures
@@ -211,4 +211,4 @@ Key decisions from research that influenced this roadmap:
 
 ---
 *Roadmap created: 2026-04-10*
-*Last updated: 2026-04-17 — Phase 3 gap closure plan (03-06) added*
+*Last updated: 2026-04-18 — Phase 5 plans finalized (05-01, 05-02, 05-03)*
