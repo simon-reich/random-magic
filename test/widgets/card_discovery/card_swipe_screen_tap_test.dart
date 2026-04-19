@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 // CARD-01: Tapping a card in CardSwipeScreen navigates to CardDetailScreen.
 // Full integration test requires a running router and mock repository.
-// Implemented as a skip-stub here; full test in Phase 5 integration suite.
+// Implemented as a skip-stub here; full flow verified in integration_test/core_flow_test.dart (Plan 05-03).
 
 void main() {
   group('CardSwipeScreen tap-to-detail (CARD-01)', () {

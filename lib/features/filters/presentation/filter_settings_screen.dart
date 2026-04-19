@@ -359,6 +359,7 @@ class _ManaToggleButton extends StatelessWidget {
       width: 32,
       height: 32,
       placeholderBuilder: (_) => _ManaSymbolFallback(label: color.code),
+      errorBuilder: (_, _, _) => _ManaSymbolFallback(label: color.code),
     );
   }
 }
