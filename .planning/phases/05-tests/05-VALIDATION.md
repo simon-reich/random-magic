@@ -1,9 +1,9 @@
 ---
 phase: 5
 slug: tests
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-04-18
 ---
 
@@ -38,12 +38,12 @@ created: 2026-04-18
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 5-01-01 | 01 | 1 | TEST-01 | — | N/A | unit | `flutter test test/unit/card_discovery/magic_card_from_json_test.dart` | ❌ W0 | ⬜ pending |
-| 5-01-02 | 01 | 1 | TEST-02 | — | N/A | unit | `flutter test test/unit/card_discovery/` | ❌ W0 | ⬜ pending |
-| 5-02-01 | 02 | 1 | TEST-03 | — | N/A | widget | `flutter test test/widgets/card_discovery/card_swipe_screen_test.dart` | ❌ W0 | ⬜ pending |
-| 5-02-02 | 02 | 1 | TEST-04 | — | N/A | widget | `flutter test test/widgets/filters/filter_settings_screen_test.dart` | ✅ | ⬜ pending |
-| 5-03-01 | 03 | 2 | TEST-06 | — | N/A | integration | `flutter test integration_test/core_flow_test.dart` | ❌ W0 | ⬜ pending |
-| 5-03-02 | 03 | 2 | QA-01 | — | N/A | coverage | `flutter test --coverage && lcov --summary coverage/lcov.info` | ✅ | ⬜ pending |
+| 5-01-01 | 01 | 1 | TEST-01 | — | N/A | unit | `flutter test test/unit/card_discovery/magic_card_from_json_test.dart` | ✅ | ✅ green |
+| 5-01-02 | 01 | 1 | TEST-02 | — | N/A | unit | `flutter test test/unit/card_discovery/` | ✅ | ✅ green |
+| 5-02-01 | 02 | 1 | TEST-03 | — | N/A | widget | `flutter test test/widgets/card_discovery/card_swipe_screen_test.dart` | ✅ | ✅ green |
+| 5-02-02 | 02 | 1 | TEST-04 | — | N/A | widget | `flutter test test/widgets/filters/filter_settings_screen_test.dart` | ✅ | ✅ green |
+| 5-03-01 | 03 | 2 | TEST-06 | — | N/A | integration | `flutter test integration_test/core_flow_test.dart` | ✅ | ✅ green |
+| 5-03-02 | 03 | 2 | QA-01 | — | N/A | coverage | `flutter test --coverage && lcov --summary coverage/lcov.info` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -70,11 +70,11 @@ created: 2026-04-18
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 60s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 60s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** complete
