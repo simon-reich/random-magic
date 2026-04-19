@@ -1,17 +1,28 @@
-# random_magic
+# Random Magic
 
-A new Flutter project.
+Discover Magic: The Gathering cards by swiping through randomised results from the Scryfall API.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+- Swipe left/right through random MTG cards with full-screen artwork
+- Filter by colour, type, rarity, and release date — save filters as named presets
+- Save cards to Favourites, browse in a grid, swipe through them individually
+- Card detail view with prices (USD/EUR), format legalities, and double-faced card support
 
-A few resources to get you started if this is your first Flutter project:
+## Install (Android)
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+Download the latest APK from [Releases](https://github.com/simon-reich/random-magic/releases), enable *Install from unknown sources* on your device, and open the file.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Tech Stack
+
+Flutter · Riverpod · Hive CE · Dio · GoRouter · Scryfall API
+
+## Development
+
+```bash
+flutter pub get
+flutter run
+flutter test
+```
+
+Requires Flutter stable channel. No API key needed — Scryfall is open.
