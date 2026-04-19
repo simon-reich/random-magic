@@ -33,21 +33,27 @@ void main() {
 
       // 4. Tap the bookmark button to save the card to Favourites.
       await tester.tap(find.byTooltip('Save to Favourites'));
-      await tester.pumpAndSettle(const Duration(seconds: 2));
+      // Pump a single frame so the SnackBar is shown but not yet dismissed.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
 
-      // SnackBar confirms the save.
+      // SnackBar confirms the save — assert before pumpAndSettle dismisses it.
       expect(find.text('Saved to Favourites'), findsOneWidget);
+
+      // Let the SnackBar fully dismiss before navigating.
+      await tester.pumpAndSettle(const Duration(seconds: 5));
 
       // 5. Navigate to the Favourites tab via the NavigationBar.
       await tester.tap(find.text('Favourites').last);
       await tester.pumpAndSettle(const Duration(seconds: 2));
 
       // 6. Assert the Favourites grid shows at least one card.
+      // FavouritesScreen uses SliverGrid inside CustomScrollView (not GridView).
       expect(
-        find.byType(GridView),
+        find.byType(CustomScrollView),
         findsOneWidget,
         reason:
-            'Expected FavouritesScreen GridView to be visible after saving a card.',
+            'Expected FavouritesScreen CustomScrollView to be visible after saving a card.',
       );
     },
     timeout: const Timeout(Duration(minutes: 2)),
