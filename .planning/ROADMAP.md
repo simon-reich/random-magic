@@ -12,7 +12,7 @@
 | Phase 2 | Filter Settings & Presets | Filter UI wired to Scryfall query, named preset persistence | ✅ Done |
 | Phase 3 | Favourites | Save / browse / delete favourites with Hive CE persistence | 🔲 Next |
 | Phase 4 | Card Detail View | Full card metadata, prices, format legalities | 🔲 Pending |
-| Phase 5 | Tests | 80%+ logic coverage, all screen states tested, integration test | 🔲 Pending |
+| Phase 5 | Tests | 80%+ logic coverage, all screen states tested, integration test | ✅ Done |
 
 ---
 
@@ -184,14 +184,15 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — Add integration_test to pubspec; create FakeCardRepository fixture; write MagicCard.fromJson() unit tests (TEST-02) + RandomCardNotifier unit tests
-- [ ] 05-02-PLAN.md — Write CardSwipeScreen widget tests — all 5 states (TEST-03); replace FilterSettingsScreen stubs (TEST-04); replace ActiveFilterBar stubs (DISC-10)
-- [ ] 05-03-PLAN.md — Write integration test: swipe → save → Favourites grid (TEST-06); run full suite + coverage gate (QA-01, QA-02, QA-03)
+- [x] 05-01-PLAN.md — Add integration_test to pubspec; create FakeCardRepository fixture; write MagicCard.fromJson() unit tests (TEST-02) + RandomCardNotifier unit tests
+- [x] 05-02-PLAN.md — Write CardSwipeScreen widget tests — all 5 states (TEST-03); replace FilterSettingsScreen stubs (TEST-04); replace ActiveFilterBar stubs (DISC-10)
+- [x] 05-03-PLAN.md — Write integration test: swipe → save → Favourites grid (TEST-06); run full suite + coverage gate (QA-01, QA-02, QA-03)
 
 **UAT:**
-- [ ] `flutter test` passes with zero failures
-- [ ] `flutter test --coverage` shows 80%+ coverage on `lib/features/` + `lib/shared/` logic classes
-- [ ] All edge cases covered: double-faced card, null price, null flavour text, empty filter, 404/422/network errors
+- [x] `flutter test` passes with zero failures (126 tests, 2 skips)
+- [x] `flutter test --coverage` shows 80%+ coverage on logic classes (magic_card 100%, scryfall_query_builder 100%, business logic overall 94.3%)
+- [x] All edge cases covered: double-faced card, null price, null flavour text, empty filter, 404/422/network errors
+- [x] Integration test passes on device with network access
 
 ---
 
@@ -211,4 +212,4 @@ Key decisions from research that influenced this roadmap:
 
 ---
 *Roadmap created: 2026-04-10*
-*Last updated: 2026-04-18 — Phase 5 plans finalized (05-01, 05-02, 05-03)*
+*Last updated: 2026-04-19 — Phase 5 complete (126 tests passing, integration test UAT passed)*

@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_plan: Not started
-status: Ready to plan
-last_updated: "2026-04-18T08:52:14.393Z"
+current_plan: complete
+status: complete
+last_updated: "2026-04-19T00:00:00.000Z"
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 18
   completed_plans: 18
   percent: 100
@@ -20,14 +20,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-10)
 
 **Core value:** Tactile, swipeable MTG card discovery — always one swipe away from a new random card
-**Current focus:** Phase 03 — favourites
+**Current focus:** Complete — all 5 phases done
 
 ## Current Status
 
-**Phase:** 5 of 5 (tests)
-**Active Jira ticket:** Phase 3 next
-**Current Plan:** Not started
-**Last session:** 2026-04-17T10:48:27.261Z
+**Phase:** 5 of 5 (tests) — COMPLETE
+**Current Plan:** complete
+**Last session:** 2026-04-19
 
 ## Phase Progress
 
@@ -35,19 +34,16 @@ See: .planning/PROJECT.md (updated 2026-04-10)
 |-------|--------|
 | Phase 1: CardSwipeScreen | Done (verified 2026-04-12) |
 | Phase 2: Filter Settings & Presets | Done (verified 2026-04-16) |
-| Phase 3: Favourites | Next |
-| Phase 4: Card Detail View | Pending |
-| Phase 5: Tests | Pending |
+| Phase 3: Favourites | Done (verified 2026-04-17) |
+| Phase 4: Card Detail View | Done (verified 2026-04-18) |
+| Phase 5: Tests | Done (verified 2026-04-19) |
 
-## Plan Progress — Phase 2
+## Phase 5 Results
 
-| Plan | Name | Status |
-|------|------|--------|
-| 02-00 | Test stubs + fixtures | Done |
-| 02-01 | MtgColor, FilterSettings, FilterPreset, Hive init | Done |
-| 02-02 | ScryfallQueryBuilder, FilterPresetRepository, providers | Done |
-| 02-03 | FilterSettingsScreen UI | Done — UAT passed, verified 2026-04-12 |
-| 02-04 | Active filter bar on CardSwipeScreen | Done — UAT passed, verified 2026-04-16 |
+- 126 tests passing, 2 intentional skips, 0 failures
+- `flutter analyze --fatal-infos`: No issues found
+- Coverage: magic_card 100%, scryfall_query_builder 100%, card_swipe_screen 60%, filter_settings_screen 68%, business logic overall 94.3%
+- Integration test (TEST-06) passed on simulator with real Scryfall API
 
 ## Key Decisions
 
@@ -62,6 +58,7 @@ See: .planning/PROJECT.md (updated 2026-04-10)
 - **activePresetNameProvider:** Promoted from plain Dart field to Riverpod provider so `*` suffix on preset chips rebuilds correctly on tab return
 - **_ActiveFilterBar uses Wrap not Row:** SingleChildScrollView+Row clips chips; Wrap breaks into multiple lines automatically
 - **Chip label color AppColors.background:** labelSmall (grey) is unreadable on gold selected chip — overridden to dark navy for contrast
+- **SVG test mocking via HttpOverrides:** flutter_svg uses package:http IOClient; override HttpOverrides.global in setUpAll with a fake that returns valid SVG (viewBox required) — prevents vector_graphics zone errors in widget tests
 
 ## Backlog
 
@@ -72,4 +69,4 @@ See: .planning/PROJECT.md (updated 2026-04-10)
 None.
 
 ---
-*State last updated: 2026-04-16 (Phase 2 complete, Phase 3 next)*
+*State last updated: 2026-04-19 — v1.0 milestone complete*
