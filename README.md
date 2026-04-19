@@ -26,3 +26,11 @@ flutter test
 ```
 
 Requires Flutter stable channel. No API key needed — Scryfall is open.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
+
+## Legal
+
+Random Magic is unofficial Fan Content permitted under the [Wizards of the Coast Fan Content Policy](https://company.wizards.com/en/legal/fancontentpolicy). Not approved/endorsed by Wizards of the Coast. Portions of the materials used are property of Wizards of the Coast LLC. ©Wizards of the Coast LLC.
